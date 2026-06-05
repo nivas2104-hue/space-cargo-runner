@@ -13,7 +13,7 @@ bot.onText(/\/start/, (msg) => {
         [
           {
             text: "🎮 Play Game",
-            url: "https://google.com",
+            url: "https://space-cargo-runner.vercel.app",
           },
         ],
       ],
