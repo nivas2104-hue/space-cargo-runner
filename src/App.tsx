@@ -12,7 +12,6 @@ export default function App() {
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoins, setFinalCoins] = useState(0);
   const [finalCargo, setFinalCargo] = useState(0);
-  const [finalLevel, setFinalLevel] = useState(1);
   const [totalCoins, setTotalCoins] = useState(() =>
     Number(localStorage.getItem("totalCoins") || 0),
   );
@@ -80,7 +79,7 @@ export default function App() {
           setBestScore(newBestScore);
           localStorage.setItem("bestScore", newBestScore.toString());
 
-          fetch("http://localhost:3000/score", {
+          fetch("https://space-cargo-runner.onrender.com", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

@@ -844,7 +844,6 @@ export default function GameplayScreen({
     Math.max(0, Math.min(100, (fuel / maxFuel) * 100)),
   );
   const isLowFuel = fuelPct < 25;
-  const isMidFuel = fuelPct < 50;
   const fuelColor = "linear-gradient(90deg,#5b00ff,#8c3fff,#c966ff)";
   return (
     <div

@@ -12,8 +12,6 @@ export default class MainScene extends Phaser.Scene {
   private cargoCount = 0;
 
   private coins = 0;
-  private fuel = 100;
-  private lives = 3;
   private level = 1;
 
   private scoreText!: Phaser.GameObjects.Text;
