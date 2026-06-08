@@ -298,6 +298,7 @@ export default function App() {
     );
   }
   app.post("/user", async (req, res) => {
+    console.log("USER RECEIVED:", req.body);
     try {
       const { userId, wallet, telegramUsername } = req.body;
 
