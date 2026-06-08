@@ -124,24 +124,25 @@ export default function App() {
             .then((r) => r.json())
             .then((data) => console.log("Leaderboard Updated", data))
             .catch(console.error);
-
-          fetch("https://space-cargo-runner.onrender.com/session", {
+          fetch("https://space-cargo-runner.onrender.com/score", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              userId,
+              wallet: userId,
               score,
-              coins,
-              cargo,
             }),
           })
             .then((r) => r.json())
-            .then((data) => console.log("Session Saved", data))
-            .catch(console.error);
-
-          setScreen("gameover");
+            .then((data) => {
+              console.log("Leaderboard Updated", data);
+              setScreen("gameover");
+            })
+            .catch((err) => {
+              console.error(err);
+              setScreen("gameover");
+            });
         }}
       />
     );
