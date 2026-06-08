@@ -49,6 +49,7 @@ app.post("/score", async (req, res) => {
     console.log("SCORE RECEIVED:", req.body);
 
     const { wallet, score } = req.body;
+    const earnedXP = Math.floor(score / 10);
 
     if (!wallet || score === undefined) {
       return res.status(400).json({
@@ -64,7 +65,14 @@ app.post("/score", async (req, res) => {
       `,
       [wallet, score],
     );
-
+    await pool.query(
+      `
+  UPDATE users
+  SET xp = COALESCE(xp,0) + $1
+  WHERE user_id = $2
+  `,
+      [earnedXP, wallet],
+    );
     const leaderboard = await pool.query(`
       SELECT *
       FROM leaderboard
@@ -74,6 +82,7 @@ app.post("/score", async (req, res) => {
 
     res.json({
       success: true,
+      xpEarned: earnedXP,
       leaderboard: leaderboard.rows,
     });
   } catch (err) {

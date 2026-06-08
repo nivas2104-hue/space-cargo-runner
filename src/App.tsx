@@ -124,6 +124,11 @@ export default function App() {
             .then((r) => r.json())
             .then((data) => {
               console.log("Leaderboard Updated", data);
+
+              if (data.xpEarned) {
+                alert(`+${data.xpEarned} XP Earned`);
+              }
+
               setScreen("gameover");
             })
             .catch((err) => {
