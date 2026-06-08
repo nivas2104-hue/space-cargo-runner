@@ -583,6 +583,31 @@ export default function MainMenu({
         >
           👤 PROFILE
         </button>
+        <button
+          onClick={() => {
+            const username = prompt("Enter Telegram Username");
+
+            if (username) {
+              localStorage.setItem("username", username);
+              localStorage.setItem("loginType", "telegram");
+              window.location.reload();
+            }
+          }}
+          style={{
+            fontFamily: "'Fredoka One', cursive",
+            fontSize: 18,
+            letterSpacing: 2,
+            color: "#fff",
+            background: "#229ED9",
+            border: "none",
+            borderRadius: 999,
+            padding: "12px 0",
+            width: "100%",
+            cursor: "pointer",
+          }}
+        >
+          📱 TELEGRAM LOGIN
+        </button>
         <WalletConnect />
       </div>
     </div>

@@ -25,12 +25,13 @@ export default function App() {
 
     if (!name) {
       name = prompt("Enter Username") || "Guest";
+
       localStorage.setItem("username", name);
+      localStorage.setItem("loginType", "guest");
     }
 
     return name;
   });
-
   useEffect(() => {
     fetch("https://space-cargo-runner.onrender.com/user", {
       method: "POST",
@@ -38,9 +39,10 @@ export default function App() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username,
-        telegramId: null,
-        walletAddress: localStorage.getItem("walletAddress"),
+        userId: username,
+        wallet: localStorage.getItem("walletAddress"),
+        telegramUsername:
+          localStorage.getItem("loginType") === "telegram" ? username : null,
       }),
     })
       .then((r) => r.json())

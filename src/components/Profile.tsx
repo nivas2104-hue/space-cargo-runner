@@ -60,7 +60,12 @@ export default function Profile({
         <p>⭐ Level: {level}</p>
 
         <p>✨ XP: {xp}</p>
-
+        <p>
+          Login Type:{" "}
+          {localStorage.getItem("loginType") === "telegram"
+            ? "Telegram"
+            : "Guest"}
+        </p>
         <div
           style={{
             height: "12px",
