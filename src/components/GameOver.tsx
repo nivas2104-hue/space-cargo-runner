@@ -1,5 +1,5 @@
 import ShipSVG from "../components/ShipSVG";
-
+import { useEffect, useState } from "react";
 interface GameOverProps {
   score: number;
   coins: number;
@@ -13,7 +13,15 @@ export default function GameOver({
   cargo,
   onRetry,
 }: GameOverProps) {
-  const leaderboard = JSON.parse(localStorage.getItem("leaderboard") ?? "[]");
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  useEffect(() => {
+    fetch("https://space-cargo-runner.onrender.com/leaderboard")
+      .then((res) => res.json())
+      .then((data) => {
+        setLeaderboard(data.slice(0, 10));
+      })
+      .catch(console.error);
+  }, []);
   return (
     <div
       style={{
