@@ -122,19 +122,6 @@ export default function App() {
             }),
           })
             .then((r) => r.json())
-            .then((data) => console.log("Leaderboard Updated", data))
-            .catch(console.error);
-          fetch("https://space-cargo-runner.onrender.com/score", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              wallet: userId,
-              score,
-            }),
-          })
-            .then((r) => r.json())
             .then((data) => {
               console.log("Leaderboard Updated", data);
               setScreen("gameover");
