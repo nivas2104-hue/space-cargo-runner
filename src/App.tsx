@@ -39,9 +39,9 @@ export default function App() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        userId: username,
-        wallet: localStorage.getItem("walletAddress"),
-        telegramUsername: username,
+        username,
+        telegramId: null,
+        walletAddress: localStorage.getItem("walletAddress"),
       }),
     })
       .then((r) => r.json())
