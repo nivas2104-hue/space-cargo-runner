@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
 import {
   COLOR,
   FONT,
@@ -8,6 +6,8 @@ import {
   SecondaryButton,
   injectGlobalStyles,
 } from "./design-system";
+import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface MainMenuProps {
