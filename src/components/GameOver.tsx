@@ -3,10 +3,11 @@ import {
   COLOR,
   FONT,
   RADIUS,
-  CLS,
+  GLOW,
   BracketFrame,
   PrimaryButton,
   SecondaryButton,
+  CLS,
   injectGlobalStyles,
 } from "./design-system";
 
@@ -17,107 +18,281 @@ interface GameOverProps {
   onRetry: () => void;
 }
 
-// ─── Wrecked ship SVG ─────────────────────────────────────────────────────────
+// ─── Wrecked Ship — angular, matches design system aesthetic ──────────────────
+// ─── Wrecked Ship ─────────────────────────────────────────────────────────────
 const WreckedShip = () => (
   <svg
-    width="100"
-    height="124"
-    viewBox="0 0 130 160"
+    width="180"
+    height="180"
+    viewBox="0 0 190 160"
     fill="none"
     style={{
-      filter: "drop-shadow(0 0 20px rgba(255,90,90,0.5))",
+      filter:
+        "drop-shadow(0 0 28px rgba(255,90,90,0.65)) drop-shadow(0 0 8px rgba(255,90,90,0.3))",
       animation: "shipFloat 2.2s ease-in-out infinite",
     }}
   >
-    {/* Smoke trails */}
-    {[0, 1, 2, 3].map((i) => (
-      <div
-        key={i}
-        style={{
-          position: "absolute",
-          top: 20 + i * 12,
-          left: -20 - i * 8,
-          width: 24 + i * 6,
-          height: 24 + i * 6,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.06)",
-          filter: "blur(12px)",
-          animation: `nebulaDrift ${4 + i}s ease-in-out infinite`,
-        }}
-      />
-    ))}
-    <path
-      d="M62 100 L16 120 L21 132 L60 112 Z"
-      fill="#142030"
-      stroke="rgba(255,90,90,0.3)"
-      strokeWidth="1.2"
-    />
-    <path
-      d="M68 100 L114 120 L109 132 L70 112 Z"
-      fill="#142030"
-      stroke="rgba(255,90,90,0.3)"
-      strokeWidth="1.2"
-    />
-    <rect
-      x="18"
-      y="118"
-      width="16"
-      height="5"
-      rx="2.5"
-      fill="rgba(255,90,90,0.4)"
-    />
-    <rect
-      x="96"
-      y="118"
-      width="16"
-      height="5"
-      rx="2.5"
-      fill="rgba(255,90,90,0.4)"
-    />
-    <path
-      d="M65 8 C90 20 92 82 81 116 L49 116 C38 82 40 20 65 8Z"
-      fill="url(#wreckedBody)"
-      stroke="rgba(255,90,90,0.4)"
-      strokeWidth="1.8"
-    />
-    <path d="M60 68 L70 68 L68 102 L62 102Z" fill="rgba(255,90,90,0.1)" />
-    {/* Cracked cockpit */}
+    <defs>
+      <linearGradient id="wCore" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#2A0808" />
+        <stop offset="100%" stopColor="#0A0202" />
+      </linearGradient>
+      <radialGradient id="wDeadL" cx="50%" cy="0%">
+        <stop offset="0%" stopColor="#FF5A5A" stopOpacity="0.25" />
+        <stop offset="100%" stopColor="#FF5A5A" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="wDeadR" cx="50%" cy="0%">
+        <stop offset="0%" stopColor="#FF5A5A" stopOpacity="0.25" />
+        <stop offset="100%" stopColor="#FF5A5A" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+
+    {/* Dead engine — faint red flicker, no real flame */}
     <ellipse
-      cx="65"
-      cy="50"
-      rx="14"
-      ry="21"
-      fill="rgba(255,90,90,0.15)"
-      stroke="rgba(255,90,90,0.35)"
-      strokeWidth="1.5"
+      cx="54"
+      cy="128"
+      rx="10"
+      ry="4"
+      fill="url(#wDeadL)"
+      opacity="0.6"
+      style={{ animation: "thrusterGlow 0.6s ease-in-out infinite" }}
+    />
+    <ellipse
+      cx="136"
+      cy="128"
+      rx="10"
+      ry="4"
+      fill="url(#wDeadR)"
+      opacity="0.4"
+    />
+
+    {/* Smoke wisps — thin faded polygons instead of flames */}
+    <polygon points="50,118 54,132 58,118" fill="rgba(255,90,90,0.12)" />
+    <polygon points="132,118 136,130 140,118" fill="rgba(255,90,90,0.08)" />
+
+    {/* Left boom strut — bent/damaged */}
+    <polygon
+      points="62,60 42,60 36,120 64,120"
+      fill="#1A0808"
+      stroke="rgba(255,90,90,0.28)"
+      strokeWidth="0.8"
+    />
+    {/* Damage slash on left boom */}
+    <line
+      x1="44"
+      y1="72"
+      x2="58"
+      y2="88"
+      stroke="rgba(255,90,90,0.55)"
+      strokeWidth="1.2"
     />
     <line
-      x1="60"
-      y1="38"
-      x2="70"
-      y2="58"
-      stroke="rgba(255,90,90,0.5)"
+      x1="44"
+      y1="95"
+      x2="54"
+      y2="105"
+      stroke="rgba(255,90,90,0.3)"
+      strokeWidth="0.7"
+    />
+
+    {/* Right boom strut */}
+    <polygon
+      points="128,60 148,60 154,120 126,120"
+      fill="#1A0808"
+      stroke="rgba(255,90,90,0.28)"
+      strokeWidth="0.8"
+    />
+    {/* Damage slash on right boom */}
+    <line
+      x1="146"
+      y1="72"
+      x2="132"
+      y2="90"
+      stroke="rgba(255,90,90,0.45)"
+      strokeWidth="1"
+    />
+
+    {/* Cross wing bar — cracked center */}
+    <polygon
+      points="62,72 128,72 128,84 62,84"
+      fill="#180808"
+      stroke="rgba(255,90,90,0.2)"
+      strokeWidth="0.7"
+    />
+    {/* Wing LEDs — dead/dim */}
+    <rect
+      x="68"
+      y="75"
+      width="8"
+      height="2"
+      rx="1"
+      fill="#FF5A5A"
+      opacity="0.25"
+    />
+    <rect
+      x="114"
+      y="75"
+      width="8"
+      height="2"
+      rx="1"
+      fill="#FF5A5A"
+      opacity="0.15"
+    />
+    {/* Wing crack */}
+    <line
+      x1="90"
+      y1="72"
+      x2="95"
+      y2="84"
+      stroke="rgba(255,90,90,0.4)"
+      strokeWidth="0.8"
+    />
+
+    {/* Center core body — battle damaged */}
+    <polygon
+      points="95,8 116,30 114,96 95,102 76,96 74,30"
+      fill="url(#wCore)"
+      stroke="rgba(255,90,90,0.45)"
+      strokeWidth="1.2"
+    />
+    <line
+      x1="95"
+      y1="8"
+      x2="95"
+      y2="102"
+      stroke="rgba(255,90,90,0.1)"
+      strokeWidth="0.7"
+      strokeDasharray="4 3"
+    />
+    <line
+      x1="76"
+      y1="52"
+      x2="114"
+      y2="52"
+      stroke="rgba(255,90,90,0.08)"
+      strokeWidth="0.7"
+    />
+    <line
+      x1="76"
+      y1="72"
+      x2="114"
+      y2="72"
+      stroke="rgba(255,90,90,0.06)"
+      strokeWidth="0.6"
+    />
+
+    {/* Hull cracks */}
+    <line
+      x1="88"
+      y1="30"
+      x2="100"
+      y2="52"
+      stroke="rgba(255,90,90,0.7)"
+      strokeWidth="1.1"
+    />
+    <line
+      x1="100"
+      y1="28"
+      x2="90"
+      y2="48"
+      stroke="rgba(255,90,90,0.4)"
+      strokeWidth="0.7"
+    />
+    <line
+      x1="82"
+      y1="65"
+      x2="92"
+      y2="78"
+      stroke="rgba(255,90,90,0.35)"
+      strokeWidth="0.6"
+    />
+    <line
+      x1="104"
+      y1="70"
+      x2="96"
+      y2="82"
+      stroke="rgba(255,90,90,0.3)"
+      strokeWidth="0.6"
+    />
+
+    {/* Cockpit — cracked, dark */}
+    <polygon
+      points="95,16 108,28 106,48 95,54 84,48 82,28"
+      fill="#0E0404"
+      stroke="rgba(255,90,90,0.38)"
+      strokeWidth="1"
+    />
+    {/* Cockpit cracks */}
+    <line
+      x1="90"
+      y1="20"
+      x2="102"
+      y2="42"
+      stroke="rgba(255,90,90,0.65)"
       strokeWidth="1"
     />
     <line
-      x1="68"
-      y1="35"
-      x2="63"
-      y2="55"
+      x1="102"
+      y1="22"
+      x2="92"
+      y2="40"
+      stroke="rgba(255,90,90,0.3)"
+      strokeWidth="0.6"
+    />
+    {/* Broken highlight shard */}
+    <polygon points="88,20 95,16 98,26 90,30" fill="rgba(255,150,150,0.1)" />
+
+    {/* Nose — snapped */}
+    <polygon points="95,8 99,15 91,15" fill="#FF5A5A" opacity="0.4" />
+
+    {/* Left engine housing — dead */}
+    <rect
+      x="40"
+      y="112"
+      width="28"
+      height="10"
+      rx="3"
+      fill="#100404"
       stroke="rgba(255,90,90,0.3)"
       strokeWidth="0.8"
     />
-    <defs>
-      <linearGradient id="wreckedBody" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#1A0808" stopOpacity="0.95" />
-        <stop offset="40%" stopColor="#2D1010" />
-        <stop offset="100%" stopColor="#1A0808" stopOpacity="0.75" />
-      </linearGradient>
-    </defs>
+    {/* Right engine housing */}
+    <rect
+      x="122"
+      y="112"
+      width="28"
+      height="10"
+      rx="3"
+      fill="#100404"
+      stroke="rgba(255,90,90,0.3)"
+      strokeWidth="0.8"
+    />
+
+    {/* Debris bits floating off */}
+    <polygon points="24,50 30,46 28,54" fill="rgba(255,90,90,0.3)" />
+    <polygon points="158,62 164,58 163,66" fill="rgba(255,90,90,0.2)" />
+    <rect
+      x="108"
+      y="36"
+      width="5"
+      height="5"
+      rx="1"
+      fill="rgba(255,90,90,0.2)"
+      transform="rotate(25 110 38)"
+    />
+    <rect
+      x="72"
+      y="88"
+      width="4"
+      height="4"
+      rx="1"
+      fill="rgba(255,90,90,0.15)"
+      transform="rotate(-15 74 90)"
+    />
   </svg>
 );
 
-// ─── Stat row ─────────────────────────────────────────────────────────────────
+// ─── Compact stat row ─────────────────────────────────────────────────────────
 function StatRow({
   label,
   value,
@@ -135,8 +310,8 @@ function StatRow({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        paddingBottom: last ? 0 : 12,
-        marginBottom: last ? 0 : 12,
+        paddingBottom: last ? 0 : 9,
+        marginBottom: last ? 0 : 9,
         borderBottom: last ? "none" : "1px solid rgba(255,255,255,0.06)",
       }}
     >
@@ -144,7 +319,7 @@ function StatRow({
         style={{
           fontFamily: FONT.ui,
           fontWeight: 600,
-          fontSize: 13,
+          fontSize: 11,
           letterSpacing: "0.15em",
           color: COLOR.textSecondary,
           textTransform: "uppercase",
@@ -156,10 +331,10 @@ function StatRow({
         className={CLS.numReadout}
         style={{
           fontFamily: FONT.mono,
-          fontSize: 18,
+          fontSize: 15,
           fontWeight: 700,
           color,
-          textShadow: `0 0 10px ${color}55`,
+          textShadow: `0 0 8px ${color}55`,
         }}
       >
         {value}
@@ -168,7 +343,7 @@ function StatRow({
   );
 }
 
-// ─── Leaderboard entry ────────────────────────────────────────────────────────
+// ─── Compact leaderboard row ──────────────────────────────────────────────────
 function LeaderRow({
   rank,
   name,
@@ -182,8 +357,8 @@ function LeaderRow({
 }) {
   const rankColors: Record<number, string> = {
     1: COLOR.amber,
-    2: "rgba(200,210,220,0.8)",
-    3: "rgba(205,140,70,0.8)",
+    2: "rgba(200,210,220,0.85)",
+    3: "rgba(205,140,70,0.85)",
   };
   const rankColor = rankColors[rank] ?? COLOR.textMuted;
   const rankLabel = rank <= 3 ? ["#1", "#2", "#3"][rank - 1] : `#${rank}`;
@@ -193,9 +368,9 @@ function LeaderRow({
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 10,
-        padding: "6px 0",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
+        gap: 8,
+        padding: "4px 0",
+        borderBottom: "1px solid rgba(255,255,255,0.04)",
         background: isCurrentUser ? "rgba(0,229,255,0.04)" : "transparent",
       }}
     >
@@ -203,9 +378,9 @@ function LeaderRow({
         style={{
           fontFamily: FONT.mono,
           fontWeight: 700,
-          fontSize: 11,
+          fontSize: 10,
           color: rankColor,
-          minWidth: 24,
+          minWidth: 20,
         }}
       >
         {rankLabel}
@@ -214,7 +389,7 @@ function LeaderRow({
         style={{
           fontFamily: FONT.ui,
           fontWeight: 600,
-          fontSize: 14,
+          fontSize: 13,
           color: isCurrentUser ? COLOR.cyan : "rgba(255,255,255,0.7)",
           flex: 1,
           overflow: "hidden",
@@ -229,8 +404,8 @@ function LeaderRow({
         style={{
           fontFamily: FONT.mono,
           fontWeight: 700,
-          fontSize: 14,
-          color: rank === 1 ? COLOR.amber : "#fff",
+          fontSize: 12,
+          color: rank === 1 ? COLOR.amber : "rgba(255,255,255,0.85)",
         }}
       >
         {Number(score).toLocaleString()}
@@ -262,12 +437,12 @@ export default function GameOver({
         position: "absolute",
         inset: 0,
         zIndex: 1000,
-        background: "rgba(5,8,20,0.94)",
+        background: "rgba(5,8,20,0.95)",
         backdropFilter: "blur(14px)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "28px 20px 32px",
+        padding: "20px 20px 24px",
         overflowY: "auto",
       }}
     >
@@ -275,30 +450,29 @@ export default function GameOver({
       <div
         style={{
           textAlign: "center",
-          marginBottom: 20,
+          marginBottom: 12,
           animation: "fadeUp 0.5s ease both",
         }}
       >
-        {/* Red accent line */}
         <div
           style={{
-            width: 48,
+            width: 42,
             height: 2,
             background: COLOR.red,
-            margin: "0 auto 14px",
+            margin: "0 auto 10px",
             boxShadow: "0 0 8px rgba(255,90,90,0.8)",
           }}
         />
         <h1
           style={{
             margin: 0,
-            fontFamily: "'Orbitron', sans-serif",
+            fontFamily: FONT.heading,
             fontWeight: 900,
-            fontSize: 48,
+            fontSize: 44,
             letterSpacing: "0.14em",
             color: COLOR.red,
             textShadow:
-              "0 0 20px rgba(255,90,90,0.6), 0 0 50px rgba(255,90,90,0.3)",
+              "0 0 18px rgba(255,90,90,0.6), 0 0 44px rgba(255,90,90,0.3)",
             lineHeight: 1,
           }}
         >
@@ -307,10 +481,10 @@ export default function GameOver({
         <div
           style={{
             fontFamily: FONT.ui,
-            fontSize: 12,
+            fontSize: 11,
             letterSpacing: "0.25em",
             color: COLOR.textMuted,
-            marginTop: 6,
+            marginTop: 5,
           }}
         >
           MISSION FAILED
@@ -321,7 +495,7 @@ export default function GameOver({
       <div
         style={{
           position: "relative",
-          marginBottom: 24,
+          marginBottom: 14,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -330,19 +504,18 @@ export default function GameOver({
         <div
           style={{
             position: "absolute",
-            width: 160,
-            height: 160,
+            width: 140,
+            height: 140,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(255,90,90,0.2) 0%, transparent 70%)",
-            filter: "blur(20px)",
+              "radial-gradient(circle, rgba(255,90,90,0.18) 0%, transparent 70%)",
+            filter: "blur(18px)",
           }}
         />
-        <div style={{ transform: "scale(1.6) rotate(18deg)", zIndex: 2 }}>
+        <div style={{ transform: "scale(1.4) rotate(16deg)", zIndex: 2 }}>
           <WreckedShip />
         </div>
       </div>
-
       {/* ── STATS PANEL ── */}
       <BracketFrame
         accent="red"
@@ -350,7 +523,7 @@ export default function GameOver({
           ...panelBase,
           width: "100%",
           maxWidth: 380,
-          marginBottom: 14,
+          marginBottom: 10,
           animation: "fadeUp 0.5s 0.1s ease both",
           opacity: 0,
           animationFillMode: "forwards",
@@ -377,27 +550,28 @@ export default function GameOver({
           ...panelBase,
           width: "100%",
           maxWidth: 380,
-          marginBottom: 20,
+          marginBottom: 14,
           animation: "fadeUp 0.5s 0.2s ease both",
           opacity: 0,
           animationFillMode: "forwards",
         }}
       >
+        {/* Section header */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: 8,
-            marginBottom: 12,
+            marginBottom: 8,
           }}
         >
           <div
-            style={{ flex: 1, height: 1, background: "rgba(255,181,71,0.2)" }}
+            style={{ flex: 1, height: 1, background: "rgba(255,181,71,0.18)" }}
           />
           <span
             style={{
               fontFamily: FONT.mono,
-              fontSize: 10,
+              fontSize: 9,
               letterSpacing: "0.2em",
               color: COLOR.amber,
             }}
@@ -405,7 +579,7 @@ export default function GameOver({
             ◈ LEADERBOARD
           </span>
           <div
-            style={{ flex: 1, height: 1, background: "rgba(255,181,71,0.2)" }}
+            style={{ flex: 1, height: 1, background: "rgba(255,181,71,0.18)" }}
           />
         </div>
 
@@ -415,7 +589,8 @@ export default function GameOver({
               fontFamily: FONT.ui,
               color: COLOR.textMuted,
               textAlign: "center",
-              padding: "12px 0",
+              padding: "8px 0",
+              fontSize: 12,
             }}
           >
             Loading...
@@ -432,13 +607,12 @@ export default function GameOver({
         )}
       </BracketFrame>
 
-      {/* ── BUTTONS ── */}
+      {/* ── BUTTONS — side by side ── */}
       <div
         style={{
           width: "100%",
           maxWidth: 380,
           display: "flex",
-          flexDirection: "column",
           gap: 10,
           animation: "fadeUp 0.5s 0.3s ease both",
           opacity: 0,
@@ -449,14 +623,11 @@ export default function GameOver({
           onClick={onRetry}
           amber
           pulse
-          style={{ padding: "15px 0", width: "100%", fontSize: 16 }}
+          style={{ padding: "13px 0", flex: 2, fontSize: 14 }}
         >
           ▶ &nbsp;PLAY AGAIN
         </PrimaryButton>
-
-        <SecondaryButton
-          style={{ padding: "12px 0", width: "100%", fontSize: 12 }}
-        >
+        <SecondaryButton style={{ padding: "13px 0", flex: 1, fontSize: 12 }}>
           ⬡ &nbsp;HANGAR
         </SecondaryButton>
       </div>
@@ -464,9 +635,9 @@ export default function GameOver({
       {/* Tagline */}
       <div
         style={{
-          marginTop: 20,
+          marginTop: 14,
           fontFamily: FONT.ui,
-          fontSize: 11,
+          fontSize: 10,
           letterSpacing: "0.3em",
           color: COLOR.textMuted,
           textTransform: "uppercase",
@@ -482,8 +653,9 @@ const panelBase: React.CSSProperties = {
   background: "rgba(17,24,39,0.88)",
   backdropFilter: "blur(14px) saturate(1.3)",
   WebkitBackdropFilter: "blur(14px) saturate(1.3)",
-  border: "1px solid rgba(255,90,90,0.2)",
+  border: "1px solid rgba(255,90,90,0.18)",
   borderRadius: RADIUS.md,
-  boxShadow: "0 8px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
-  padding: "20px",
+  boxShadow:
+    "0 6px 30px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.04)",
+  padding: "14px 16px",
 };
