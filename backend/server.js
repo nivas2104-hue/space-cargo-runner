@@ -149,7 +149,6 @@ app.post("/user", async (req, res) => {
     });
   }
 });
-import { useState, useEffect } from "react";
 import MainMenu from "./components/MainMenu";
 import Hangar from "./components/Hangar";
 import GameOver from "./components/GameOver";
