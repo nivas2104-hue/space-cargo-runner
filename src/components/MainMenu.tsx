@@ -1,23 +1,31 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import WalletConnect from "./WalletConnect";
-// ─── Types ────────────────────────────────────────────────────────────────────
+import {
+  COLOR,
+  RADIUS,
+  PrimaryButton,
+  injectGlobalStyles,
+} from "./design-system";
+
+// ─── Props ────────────────────────────────────────────────────────────────────
 interface MainMenuProps {
   onStart: () => void;
   onHangar: () => void;
   onProfile: () => void;
 }
 
-// ─── SVG Ship (uses ship.png via <image> tag so real asset is respected) ──────
+// ─── Ship SVG — industrial cargo runner ──────────────────────────────────────
 const ShipSVG = () => (
   <svg
     width="160"
     height="200"
     viewBox="0 0 130 160"
     fill="none"
-    xmlns="http://www.w3.org/2000/svg"
     style={{
-      filter: "drop-shadow(0 0 28px #b44fff) drop-shadow(0 0 10px #4fc3ff)",
+      filter:
+        "drop-shadow(0 0 24px rgba(0,229,255,0.6)) drop-shadow(0 0 8px rgba(0,229,255,0.3))",
+      animation: "bob 2.8s ease-in-out infinite",
     }}
   >
     {/* Engine glow */}
@@ -28,23 +36,39 @@ const ShipSVG = () => (
       ry="20"
       fill="url(#egMenu)"
       opacity="0.75"
+      style={{ animation: "thrusterGlow 0.18s ease-in-out infinite" }}
     />
     {/* Main flame */}
-    <path d="M51 118 Q65 158 79 118" fill="url(#flameMenu)" />
+    <path
+      d="M51 118 Q65 158 79 118"
+      fill="url(#flameMenu)"
+      style={{
+        transformOrigin: "65px 130px",
+        animation: "thrusterFlame 0.14s ease-in-out infinite",
+      }}
+    />
     {/* Side flames */}
-    <path d="M42 106 Q37 122 44 118" fill="url(#sflameMenu)" />
-    <path d="M88 106 Q93 122 86 118" fill="url(#sflameMenu)" />
+    <path
+      d="M42 106 Q37 122 44 118"
+      fill="url(#sflameMenu)"
+      style={{ animation: "thrusterFlame 0.18s 0.05s ease-in-out infinite" }}
+    />
+    <path
+      d="M88 106 Q93 122 86 118"
+      fill="url(#sflameMenu)"
+      style={{ animation: "thrusterFlame 0.18s 0.1s ease-in-out infinite" }}
+    />
     {/* Wings */}
     <path
       d="M62 100 L16 120 L21 132 L60 112 Z"
       fill="url(#wingMenuL)"
-      stroke="#b44fff"
+      stroke={COLOR.cyanSoft}
       strokeWidth="1.2"
     />
     <path
       d="M68 100 L114 120 L109 132 L70 112 Z"
       fill="url(#wingMenuR)"
-      stroke="#b44fff"
+      stroke={COLOR.cyanSoft}
       strokeWidth="1.2"
     />
     {/* Wing accent lights */}
@@ -54,7 +78,7 @@ const ShipSVG = () => (
       width="16"
       height="5"
       rx="2.5"
-      fill="#4fc3ff"
+      fill={COLOR.cyan}
       opacity="0.9"
     />
     <rect
@@ -63,37 +87,47 @@ const ShipSVG = () => (
       width="16"
       height="5"
       rx="2.5"
-      fill="#4fc3ff"
+      fill={COLOR.cyan}
       opacity="0.9"
     />
-    {/* Wing stripe */}
+    {/* Wing panel lines */}
     <line
       x1="54"
       y1="108"
       x2="24"
       y2="122"
-      stroke="#b44fff"
+      stroke={COLOR.cyanSoft}
       strokeWidth="1"
-      opacity="0.45"
+      opacity="0.4"
     />
     <line
       x1="76"
       y1="108"
       x2="106"
       y2="122"
-      stroke="#b44fff"
+      stroke={COLOR.cyanSoft}
       strokeWidth="1"
-      opacity="0.45"
+      opacity="0.4"
     />
     {/* Body */}
     <path
       d="M65 8 C90 20 92 82 81 116 L49 116 C38 82 40 20 65 8Z"
       fill="url(#bodyMenu)"
-      stroke="#c966ff"
+      stroke="rgba(0,229,255,0.45)"
       strokeWidth="1.8"
     />
-    {/* Body center stripe */}
-    <path d="M60 68 L70 68 L68 102 L62 102Z" fill="rgba(180,79,255,0.28)" />
+    {/* Body panel lines */}
+    <path d="M60 40 L70 40 L69 80 L61 80Z" fill="rgba(0,229,255,0.08)" />
+    <line
+      x1="55"
+      y1="60"
+      x2="75"
+      y2="60"
+      stroke="rgba(0,229,255,0.15)"
+      strokeWidth="0.8"
+    />
+    {/* Center stripe */}
+    <path d="M60 68 L70 68 L68 102 L62 102Z" fill="rgba(0,229,255,0.18)" />
     {/* Cockpit */}
     <ellipse
       cx="65"
@@ -114,44 +148,44 @@ const ShipSVG = () => (
       transform="rotate(-10 59 43)"
     />
     {/* Nose tip */}
-    <ellipse cx="65" cy="12" rx="5" ry="4" fill="#ffd84d" opacity="0.9" />
+    <ellipse cx="65" cy="12" rx="5" ry="4" fill={COLOR.cyan} opacity="0.9" />
     <defs>
       <radialGradient id="egMenu" cx="50%" cy="50%">
-        <stop offset="0%" stopColor="#b44fff" stopOpacity="0.9" />
-        <stop offset="100%" stopColor="#b44fff" stopOpacity="0" />
+        <stop offset="0%" stopColor={COLOR.cyan} stopOpacity="0.9" />
+        <stop offset="100%" stopColor={COLOR.cyan} stopOpacity="0" />
       </radialGradient>
       <linearGradient id="flameMenu" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#b44fff" />
-        <stop offset="50%" stopColor="#ff7700" stopOpacity="0.85" />
+        <stop offset="0%" stopColor={COLOR.cyanSoft} />
+        <stop offset="50%" stopColor={COLOR.cyan} stopOpacity="0.85" />
         <stop offset="100%" stopColor="transparent" />
       </linearGradient>
       <linearGradient id="sflameMenu" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#4fc3ff" stopOpacity="0.75" />
+        <stop offset="0%" stopColor={COLOR.cyan} stopOpacity="0.75" />
         <stop offset="100%" stopColor="transparent" />
       </linearGradient>
       <linearGradient id="bodyMenu" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#4a0099" stopOpacity="0.95" />
-        <stop offset="40%" stopColor="#b44fff" />
-        <stop offset="100%" stopColor="#4a0099" stopOpacity="0.75" />
+        <stop offset="0%" stopColor="#0D1E3A" stopOpacity="0.95" />
+        <stop offset="40%" stopColor="#1B3060" />
+        <stop offset="100%" stopColor="#0D1E3A" stopOpacity="0.75" />
       </linearGradient>
       <linearGradient id="wingMenuL" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#4a0099" stopOpacity="0.5" />
-        <stop offset="100%" stopColor="#7b00e0" />
+        <stop offset="0%" stopColor="#081020" stopOpacity="0.5" />
+        <stop offset="100%" stopColor="#142840" />
       </linearGradient>
       <linearGradient id="wingMenuR" x1="1" y1="0" x2="0" y2="0">
-        <stop offset="0%" stopColor="#4a0099" stopOpacity="0.5" />
-        <stop offset="100%" stopColor="#7b00e0" />
+        <stop offset="0%" stopColor="#081020" stopOpacity="0.5" />
+        <stop offset="100%" stopColor="#142840" />
       </linearGradient>
       <radialGradient id="cockpitMenu" cx="35%" cy="35%">
         <stop offset="0%" stopColor="rgba(220,245,255,0.96)" />
-        <stop offset="50%" stopColor="#b44fff" stopOpacity="0.7" />
-        <stop offset="100%" stopColor="rgba(10,0,50,0.65)" />
+        <stop offset="50%" stopColor={COLOR.cyanSoft} stopOpacity="0.7" />
+        <stop offset="100%" stopColor="rgba(10,20,50,0.65)" />
       </radialGradient>
     </defs>
   </svg>
 );
 
-// ─── Starfield particle component ─────────────────────────────────────────────
+// ─── Starfield ────────────────────────────────────────────────────────────────
 const Starfield = () => {
   const stars: CSSProperties[] = Array.from({ length: 60 }, (_, i) => ({
     position: "absolute" as const,
@@ -160,11 +194,11 @@ const Starfield = () => {
     left: `${(Math.sin(i * 137.508) * 0.5 + 0.5) * 100}%`,
     top: `${(Math.cos(i * 97.3) * 0.5 + 0.5) * 100}%`,
     borderRadius: "50%",
-    background: i % 7 === 0 ? "#b44fff" : i % 11 === 0 ? "#4fc3ff" : "#ffffff",
-    opacity: 0.2 + (i % 6) * 0.12,
+    background:
+      i % 7 === 0 ? COLOR.cyanSoft : i % 11 === 0 ? COLOR.cyan : "#ffffff",
+    opacity: 0.15 + (i % 6) * 0.1,
     animation: `twinkle ${2 + (i % 4)}s ease-in-out ${(i % 10) * 0.3}s infinite alternate`,
   }));
-
   return (
     <div
       style={{
@@ -181,8 +215,8 @@ const Starfield = () => {
   );
 };
 
-// ─── Floating asteroid decoration ─────────────────────────────────────────────
-const Asteroid = ({
+// ─── Decorative asteroid blob ─────────────────────────────────────────────────
+const AsteroidDeco = ({
   size,
   top,
   left,
@@ -208,45 +242,12 @@ const Asteroid = ({
       opacity,
       transform: `rotate(${rotate}deg)`,
       borderRadius: "40% 60% 55% 45% / 50% 40% 60% 50%",
-      background: "linear-gradient(135deg,#5544aa,#332255)",
-      border: "1px solid rgba(180,79,255,0.25)",
+      background: "linear-gradient(135deg, #2A3A5A, #141E30)",
+      border: "1px solid rgba(0,229,255,0.12)",
       pointerEvents: "none",
     }}
   />
 );
-
-// ─── CSS injector (keyframes) ──────────────────────────────────────────────────
-const injectStyles = () => {
-  if (document.getElementById("scr-menu-styles")) return;
-  const el = document.createElement("style");
-  el.id = "scr-menu-styles";
-  el.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap');
-    @keyframes twinkle { from { opacity: 0.2 } to { opacity: 0.9 } }
-    @keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
-    @keyframes pulseBtn {
-      0%,100% { box-shadow: 0 6px 0 #a84f00, 0 0 18px #ffd84d, 0 0 40px rgba(255,149,0,0.5) }
-      50%      { box-shadow: 0 6px 0 #a84f00, 0 0 36px #ffd84d, 0 0 70px rgba(255,149,0,0.7) }
-    }
-    @keyframes shimmer {
-      0%   { left: -100% }
-      60%, 100% { left: 160% }
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px) }
-      to   { opacity: 1; transform: translateY(0) }
-    }
-    @keyframes logoGlow {
-      0%,100% { filter: drop-shadow(0 0 18px #b44fff) drop-shadow(0 0 40px #7b00e080) }
-      50%     { filter: drop-shadow(0 0 30px #b44fff) drop-shadow(0 0 60px #7b00e0aa) }
-    }
-    @keyframes planetSpin {
-      from { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg) }
-      to   { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg) }
-    }
-  `;
-  document.head.appendChild(el);
-};
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function MainMenu({
@@ -254,42 +255,26 @@ export default function MainMenu({
   onHangar,
   onProfile,
 }: MainMenuProps) {
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const [hangarHover, setHangarHover] = useState(false);
+  const [profileHover, setProfileHover] = useState(false);
 
   useEffect(() => {
-    injectStyles();
+    injectGlobalStyles();
   }, []);
-
-  const handleBtnDown = () => {
-    if (btnRef.current) {
-      btnRef.current.style.transform = "translateY(4px)";
-      btnRef.current.style.boxShadow = "0 2px 0 #a84f00, 0 0 18px #ffd84d";
-    }
-  };
-  const handleBtnUp = () => {
-    if (btnRef.current) {
-      btnRef.current.style.transform = "";
-      btnRef.current.style.boxShadow = "";
-    }
-  };
 
   return (
     <div
       style={{
         position: "relative",
-        width: "100vw",
-        height: "100vh",
+        width: "100%",
         minHeight: "100vh",
-        background:
-          "radial-gradient(ellipse at 50% 28%, #1a0044 0%, #07001c 65%)",
-        fontFamily: "'Nunito', sans-serif",
         overflow: "hidden",
+        background: `radial-gradient(ellipse at 50% 25%, #0D1830 0%, ${COLOR.bgDeep} 65%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
       }}
     >
-      {/* Starfield */}
       <Starfield />
 
       {/* Nebula blobs */}
@@ -299,56 +284,55 @@ export default function MainMenu({
           width: 320,
           height: 320,
           top: -80,
-          left: -100,
+          left: -120,
           borderRadius: "50%",
-          background: "rgba(100,0,200,0.18)",
-          filter: "blur(70px)",
+          background: "rgba(0,100,180,0.08)",
+          filter: "blur(80px)",
           pointerEvents: "none",
+          animation: "nebulaDrift 20s ease-in-out infinite",
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 200,
-          height: 200,
-          bottom: 120,
-          right: -60,
+          width: 240,
+          height: 240,
+          top: "35%",
+          right: -80,
           borderRadius: "50%",
-          background: "rgba(0,80,200,0.14)",
-          filter: "blur(60px)",
+          background: "rgba(0,200,255,0.06)",
+          filter: "blur(70px)",
           pointerEvents: "none",
+          animation: "nebulaDrift 26s 6s ease-in-out infinite",
         }}
       />
 
-      {/* Planet top-left */}
+      {/* Ringed planet top-left */}
       <div
         style={{
           position: "absolute",
-          width: 150,
-          height: 150,
-          top: 55,
-          left: -55,
+          top: 60,
+          left: 22,
+          width: 80,
+          height: 80,
           borderRadius: "50%",
-          background:
-            "radial-gradient(circle at 35% 30%, #4a2080, #1a0044 60%, #0d0030)",
-          border: "2px solid rgba(180,79,255,0.3)",
-          boxShadow: "0 0 50px rgba(100,0,200,0.3)",
+          background: "radial-gradient(circle at 35% 30%, #1A2A50, #080F20)",
+          border: "1px solid rgba(0,229,255,0.12)",
+          boxShadow: "0 0 18px rgba(0,80,200,0.2)",
           pointerEvents: "none",
         }}
       >
-        {/* Ring */}
         <div
           style={{
             position: "absolute",
             top: "50%",
             left: "50%",
-            width: 210,
-            height: 44,
-            transform: "translate(-50%,-50%) rotateX(75deg)",
+            width: 128,
+            height: 128,
             borderRadius: "50%",
-            border: "3px solid rgba(180,79,255,0.28)",
-            boxShadow: "0 0 18px rgba(180,79,255,0.2)",
-            animation: "planetSpin 20s linear infinite",
+            border: "2px solid rgba(0,229,255,0.18)",
+            transform: "translate(-50%,-50%) rotateX(72deg)",
+            animation: "planetRingOrbit 22s linear infinite",
           }}
         />
       </div>
@@ -362,56 +346,68 @@ export default function MainMenu({
           bottom: 200,
           right: 22,
           borderRadius: "50%",
-          background: "radial-gradient(circle at 35% 30%, #1a4080, #0d0030)",
-          border: "1.5px solid rgba(79,195,255,0.3)",
-          boxShadow: "0 0 22px rgba(0,80,200,0.3)",
+          background: "radial-gradient(circle at 35% 30%, #1a3060, #0a0f20)",
+          border: "1.5px solid rgba(0,229,255,0.15)",
+          boxShadow: "0 0 20px rgba(0,80,200,0.2)",
           pointerEvents: "none",
         }}
       />
 
-      {/* Floating asteroids */}
-      <Asteroid
+      {/* Decorative asteroids */}
+      <AsteroidDeco
         size={40}
         top="28%"
         right="38px"
-        left="auto"
         rotate={15}
-        opacity={0.6}
+        opacity={0.5}
       />
-      <Asteroid size={24} top="45%" left="28px" rotate={-20} opacity={0.5} />
-      <Asteroid
+      <AsteroidDeco
+        size={24}
+        top="45%"
+        left="28px"
+        rotate={-20}
+        opacity={0.4}
+      />
+      <AsteroidDeco
         size={16}
         top="60%"
         right="80px"
-        left="auto"
         rotate={35}
-        opacity={0.4}
+        opacity={0.35}
       />
-      <Asteroid size={30} top="72%" left="18px" rotate={-8} opacity={0.35} />
+      <AsteroidDeco size={30} top="72%" left="18px" rotate={-8} opacity={0.3} />
 
-      {/* Logo */}
+      {/* ── LOGO ── */}
       <div
         style={{
           position: "relative",
           zIndex: 5,
-          marginTop: 110,
+          marginTop: 100,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           animation: "fadeUp 0.6s ease both",
         }}
       >
+        {/* Cyan accent line above logo */}
         <div
           style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: 66,
+            width: 40,
+            height: 2,
+            background: COLOR.cyan,
+            marginBottom: 12,
+            boxShadow: GLOW_LINE,
+          }}
+        />
+        <div
+          style={{
+            fontFamily: "'Orbitron', sans-serif",
+            fontWeight: 900,
+            fontSize: 54,
+            letterSpacing: "0.18em",
             lineHeight: 1,
-            letterSpacing: 3,
-            background:
-              "linear-gradient(180deg, #fff 0%, #c8aaff 40%, #7b00e0 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
+            color: "#fff",
+            textShadow: "0 0 30px rgba(0,229,255,0.4)",
             animation: "logoGlow 3s ease-in-out infinite",
           }}
         >
@@ -419,174 +415,149 @@ export default function MainMenu({
         </div>
         <div
           style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: 38,
-            letterSpacing: 7,
-            marginTop: -6,
-            background: "linear-gradient(180deg, #4fc3ff 0%, #0077cc 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            filter: "drop-shadow(0 0 14px #4fc3ff)",
+            fontFamily: "'Orbitron', sans-serif",
+            fontWeight: 700,
+            fontSize: 32,
+            letterSpacing: "0.25em",
+            marginTop: -4,
+            color: COLOR.cyan,
+            textShadow: "0 0 20px rgba(0,229,255,0.8)",
           }}
         >
           CARGO
         </div>
         <div
           style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: 30,
-            letterSpacing: 9,
-            background: "linear-gradient(180deg, #ffd84d 0%, #ff8c00 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            filter: "drop-shadow(0 0 12px #ffd84d)",
+            fontFamily: "'Rajdhani', sans-serif",
+            fontWeight: 600,
+            fontSize: 22,
+            letterSpacing: "0.45em",
+            marginTop: 2,
+            color: COLOR.amber,
+            textShadow: "0 0 12px rgba(255,181,71,0.6)",
           }}
         >
           RUNNER
         </div>
+        <div
+          style={{
+            width: 40,
+            height: 2,
+            background: COLOR.amber,
+            marginTop: 12,
+            boxShadow: GLOW_LINE_AMBER,
+          }}
+        />
       </div>
 
-      {/* Bobbing ship */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 5,
-          marginTop: 24,
-          animation: "bob 2.8s ease-in-out infinite",
-        }}
-      >
+      {/* ── SHIP ── */}
+      <div style={{ position: "relative", zIndex: 5, marginTop: 20 }}>
         <ShipSVG />
       </div>
 
-      {/* Bottom buttons */}
+      {/* ── BOTTOM BUTTONS ── */}
       <div
         style={{
           position: "absolute",
-          bottom: 50,
+          bottom: 40,
           left: 0,
           right: 0,
-          padding: "0 36px",
+          padding: "0 32px",
           zIndex: 10,
           display: "flex",
           flexDirection: "column",
-          gap: 12,
+          gap: 10,
           animation: "fadeUp 0.7s 0.2s ease both",
           opacity: 0,
           animationFillMode: "forwards",
         }}
       >
+        {/* Tagline */}
         <div
           style={{
+            fontFamily: "'Rajdhani', sans-serif",
             fontSize: 12,
-            fontWeight: 900,
-            color: "rgba(255,255,255,0.32)",
+            fontWeight: 600,
+            color: COLOR.textMuted,
             textAlign: "center",
-            letterSpacing: 4,
+            letterSpacing: "0.3em",
             textTransform: "uppercase",
             marginBottom: 4,
           }}
         >
-          Collect · Dodge · Survive
+          COLLECT · DODGE · SURVIVE
         </div>
-        {/* START */}
-        <button
-          ref={btnRef}
-          onPointerDown={handleBtnDown}
-          onPointerUp={handleBtnUp}
-          onPointerLeave={handleBtnUp}
+
+        {/* START — cyan primary */}
+        <PrimaryButton
           onClick={onStart}
-          style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: 26,
-            letterSpacing: 3,
-            color: "#fff",
-            background: "linear-gradient(180deg, #ffd84d 0%, #ff8c00 100%)",
-            border: "none",
-            borderRadius: 999,
-            padding: "16px 0",
-            width: "100%",
-            cursor: "pointer",
-            animation: "pulseBtn 1.8s ease-in-out infinite",
-            textShadow: "0 2px 8px rgba(0,0,0,0.4)",
-            position: "relative",
-            overflow: "hidden",
-            transition: "transform 0.08s",
-          }}
+          pulse
+          style={{ padding: "16px 0", width: "100%", fontSize: 20 }}
         >
-          🚀 START
-          {/* Shimmer */}
-          <span
-            style={{
-              position: "absolute",
-              top: 0,
-              left: "-100%",
-              width: "55%",
-              height: "100%",
-              background:
-                "linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)",
-              animation: "shimmer 2.5s ease-in-out infinite",
-              pointerEvents: "none",
-            }}
-          />
-        </button>
+          ▶ &nbsp;START MISSION
+        </PrimaryButton>
+
         {/* HANGAR */}
         <button
           onClick={onHangar}
+          onMouseEnter={() => setHangarHover(true)}
+          onMouseLeave={() => setHangarHover(false)}
           style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: 18,
-            letterSpacing: 2,
-            color: "#fff",
-            background: "rgba(7,0,28,0.7)",
-            border: "1.5px solid rgba(180,79,255,0.5)",
-            borderRadius: 999,
-            padding: "12px 0",
+            fontFamily: "'Orbitron', sans-serif",
+            fontWeight: 600,
+            fontSize: 14,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: hangarHover ? COLOR.cyan : "rgba(255,255,255,0.8)",
+            background: hangarHover
+              ? "rgba(0,229,255,0.1)"
+              : "rgba(17,24,39,0.6)",
+            border: `1px solid ${hangarHover ? COLOR.borderActive : COLOR.borderPanel}`,
+            borderRadius: RADIUS.md,
+            padding: "13px 0",
             width: "100%",
             cursor: "pointer",
-            boxShadow: "0 0 18px #b44fff55",
-            backdropFilter: "blur(6px)",
-            transition: "background 0.2s, box-shadow 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(123,0,224,0.25)";
-            (e.currentTarget as HTMLButtonElement).style.boxShadow =
-              "0 0 28px #b44fff88";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(7,0,28,0.7)";
-            (e.currentTarget as HTMLButtonElement).style.boxShadow =
-              "0 0 18px #b44fff55";
+            backdropFilter: "blur(8px)",
+            boxShadow: hangarHover
+              ? `inset 0 1px 0 rgba(0,229,255,0.1), 0 2px 0 rgba(0,0,0,0.4), 0 0 12px rgba(0,229,255,0.2)`
+              : "inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 0 rgba(0,0,0,0.4)",
+            transition: "all 0.15s ease",
           }}
         >
-          🛸 HANGAR
+          ⬡ &nbsp;HANGAR
         </button>
+
+        {/* PROFILE */}
         <button
           onClick={onProfile}
+          onMouseEnter={() => setProfileHover(true)}
+          onMouseLeave={() => setProfileHover(false)}
           style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: 18,
-            letterSpacing: 2,
-            color: "#fff",
-            background: "rgba(7,0,28,0.7)",
-            border: "1.5px solid rgba(79,195,255,0.5)",
-            borderRadius: 999,
-            padding: "12px 0",
+            fontFamily: "'Orbitron', sans-serif",
+            fontWeight: 600,
+            fontSize: 14,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: profileHover ? COLOR.cyan : "rgba(255,255,255,0.6)",
+            background: profileHover
+              ? "rgba(0,229,255,0.08)"
+              : "rgba(17,24,39,0.5)",
+            border: `1px solid ${profileHover ? COLOR.borderPanel : COLOR.borderSubtle}`,
+            borderRadius: RADIUS.md,
+            padding: "11px 0",
             width: "100%",
             cursor: "pointer",
-            boxShadow: "0 0 18px #4fc3ff55",
-            backdropFilter: "blur(6px)",
+            backdropFilter: "blur(8px)",
+            transition: "all 0.15s ease",
           }}
         >
-          👤 PROFILE
+          ◈ &nbsp;PROFILE
         </button>
+
+        {/* TELEGRAM LOGIN */}
         <button
           onClick={() => {
             const username = prompt("Enter Telegram Username");
-
             if (username) {
               localStorage.setItem("username", username);
               localStorage.setItem("loginType", "telegram");
@@ -594,22 +565,40 @@ export default function MainMenu({
             }
           }}
           style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: 18,
-            letterSpacing: 2,
-            color: "#fff",
-            background: "#229ED9",
-            border: "none",
-            borderRadius: 999,
-            padding: "12px 0",
+            fontFamily: "'Rajdhani', sans-serif",
+            fontWeight: 600,
+            fontSize: 13,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.5)",
+            background: "rgba(34,158,217,0.12)",
+            border: "1px solid rgba(34,158,217,0.25)",
+            borderRadius: RADIUS.md,
+            padding: "10px 0",
             width: "100%",
             cursor: "pointer",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background =
+              "rgba(34,158,217,0.22)";
+            (e.currentTarget as HTMLButtonElement).style.color = "#fff";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background =
+              "rgba(34,158,217,0.12)";
+            (e.currentTarget as HTMLButtonElement).style.color =
+              "rgba(255,255,255,0.5)";
           }}
         >
           📱 TELEGRAM LOGIN
         </button>
+
         <WalletConnect />
       </div>
     </div>
   );
 }
+
+const GLOW_LINE = "0 0 8px rgba(0,229,255,0.8)";
+const GLOW_LINE_AMBER = "0 0 8px rgba(255,181,71,0.8)";
