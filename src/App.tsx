@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainMenu from "./components/MainMenu";
 import Hangar from "./components/Hangar";
 import GameOver from "./components/GameOver";
@@ -12,6 +12,7 @@ export default function App() {
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoins, setFinalCoins] = useState(0);
   const [finalCargo, setFinalCargo] = useState(0);
+
   const [totalCoins, setTotalCoins] = useState(() =>
     Number(localStorage.getItem("totalCoins") || 0),
   );
@@ -19,6 +20,34 @@ export default function App() {
   const [bestScore, setBestScore] = useState(() =>
     Number(localStorage.getItem("bestScore") || 0),
   );
+
+  const [username] = useState(() => {
+    let name = localStorage.getItem("username");
+
+    if (!name) {
+      name = prompt("Enter Username") || "Guest";
+      localStorage.setItem("username", name);
+    }
+
+    return name;
+  });
+
+  useEffect(() => {
+    fetch("https://space-cargo-runner.onrender.com/user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: username,
+        wallet: localStorage.getItem("walletAddress"),
+        telegramUsername: username,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => console.log("User Saved", data))
+      .catch(console.error);
+  }, [username]);
 
   if (screen === "menu") {
     return (
@@ -48,17 +77,19 @@ export default function App() {
         level={1}
         onGameOver={(score, coins, cargo) => {
           console.log("GAME OVER VALUES", score, coins, cargo);
+
           setFinalScore(score);
           setFinalCoins(coins);
           setFinalCargo(cargo);
-          const wallet = localStorage.getItem("walletAddress") ?? "Guest";
+
+          const userId = username;
 
           const leaderboard = JSON.parse(
             localStorage.getItem("leaderboard") ?? "[]",
           );
 
           leaderboard.push({
-            wallet,
+            wallet: userId,
             score,
             coins,
             cargo,
@@ -71,6 +102,7 @@ export default function App() {
             "leaderboard",
             JSON.stringify(leaderboard.slice(0, 10)),
           );
+
           const newTotalCoins = totalCoins + coins;
           setTotalCoins(newTotalCoins);
           localStorage.setItem("totalCoins", newTotalCoins.toString());
@@ -85,7 +117,7 @@ export default function App() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              wallet,
+              wallet: userId,
               score,
             }),
           })
@@ -99,7 +131,7 @@ export default function App() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              userId: wallet,
+              userId,
               score,
               coins,
               cargo,
@@ -125,5 +157,6 @@ export default function App() {
       />
     );
   }
+
   return null;
 }
