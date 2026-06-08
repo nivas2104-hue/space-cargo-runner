@@ -98,8 +98,7 @@ export default function App() {
           setFinalCoins(coins);
           setFinalCargo(cargo);
 
-          const userId = username;
-
+          const userId = localStorage.getItem("walletAddress") || username;
           const leaderboard = JSON.parse(
             localStorage.getItem("leaderboard") ?? "[]",
           );
