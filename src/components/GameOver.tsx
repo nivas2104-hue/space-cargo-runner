@@ -15,7 +15,7 @@ export default function GameOver({
 }: GameOverProps) {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   useEffect(() => {
-    fetch("http://localhost:3000/leaderboard")
+    fetch("https://space-cargo-runner.onrender.com/leaderboard")
       .then((res) => res.json())
       .then((data) => {
         setLeaderboard(data.slice(0, 10));
@@ -205,10 +205,7 @@ export default function GameOver({
                         ? "🥉"
                         : `#${index + 1}`}
                 </span>
-                <span>
-                  {entry.user_id.slice(0, 6)}...
-                  {entry.user_id.slice(-4)}
-                </span>
+                <span>{entry.user_id}</span>
 
                 <span
                   style={{
