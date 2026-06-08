@@ -79,7 +79,7 @@ export default function App() {
           setBestScore(newBestScore);
           localStorage.setItem("bestScore", newBestScore.toString());
 
-          fetch("https://space-cargo-runner.onrender.com", {
+          fetch("https://space-cargo-runner.onrender.com/score", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -92,6 +92,23 @@ export default function App() {
             .then((r) => r.json())
             .then((data) => console.log("Leaderboard Updated", data))
             .catch(console.error);
+
+          fetch("https://space-cargo-runner.onrender.com/session", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: wallet,
+              score,
+              coins,
+              cargo,
+            }),
+          })
+            .then((r) => r.json())
+            .then((data) => console.log("Session Saved", data))
+            .catch(console.error);
+
           setScreen("gameover");
         }}
       />
