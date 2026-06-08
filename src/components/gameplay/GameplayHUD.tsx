@@ -1,9 +1,20 @@
+import React from "react";
+import {
+  COLOR,
+  FONT,
+  RADIUS,
+  CLS,
+  BracketFrame,
+  SegmentedFuelBar,
+  CoinDisplay,
+} from "../design-system";
+
 interface GameplayHUDProps {
   coins: number;
   lives: number;
   fuelPct: number;
   isLowFuel: boolean;
-  fuelColor: string;
+  fuelColor: string; // kept in props for backwards compat — SegmentedFuelBar derives its own color
   score: number;
   currentLevel: number;
   cargo: string;
@@ -14,302 +25,377 @@ interface GameplayHUDProps {
   CrateSVG: React.ComponentType<{ size?: number }>;
 }
 
+// ─── Heart — redesigned as instrument indicator ───────────────────────────────
+function HeartIndicator({ filled }: { filled: boolean }) {
+  return (
+    <svg width="20" height="18" viewBox="0 0 24 24">
+      <path
+        d="M12 21C12 21 3 14 3 8C3 5.24 5.24 3 8 3C9.74 3 11.27 3.93 12 5.28C12.73 3.93 14.26 3 16 3C18.76 3 21 5.24 21 8C21 14 12 21 12 21Z"
+        fill={filled ? COLOR.red : "rgba(255,90,90,0.12)"}
+        stroke={filled ? "#C03030" : "rgba(255,90,90,0.2)"}
+        strokeWidth="1"
+      />
+    </svg>
+  );
+}
+
+// ─── Cargo crate icon for HUD ─────────────────────────────────────────────────
+function CrateIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <rect
+        x="4"
+        y="8"
+        width="40"
+        height="32"
+        rx="2"
+        fill="#1B2540"
+        stroke={COLOR.cyan}
+        strokeWidth="1.2"
+      />
+      <rect x="4" y="8" width="40" height="7" rx="2" fill="#253450" />
+      <rect x="4" y="33" width="40" height="7" rx="2" fill="#253450" />
+      <line
+        x1="24"
+        y1="8"
+        x2="24"
+        y2="40"
+        stroke="rgba(0,229,255,0.25)"
+        strokeWidth="1"
+      />
+      <circle cx="8" cy="14" r="2" fill={COLOR.cyan} opacity="0.8" />
+      <circle cx="40" cy="14" r="2" fill={COLOR.cyan} opacity="0.8" />
+      <circle cx="8" cy="36" r="2" fill={COLOR.cyan} opacity="0.8" />
+      <circle cx="40" cy="36" r="2" fill={COLOR.cyan} opacity="0.8" />
+    </svg>
+  );
+}
+
+// ─── Pause icon ───────────────────────────────────────────────────────────────
+function PauseIcon({ isPaused }: { isPaused: boolean }) {
+  if (isPaused) {
+    return (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <polygon points="3,1 13,7 3,13" fill="rgba(255,255,255,0.8)" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect
+        x="2"
+        y="1"
+        width="3.5"
+        height="12"
+        rx="1"
+        fill="rgba(255,255,255,0.8)"
+      />
+      <rect
+        x="8.5"
+        y="1"
+        width="3.5"
+        height="12"
+        rx="1"
+        fill="rgba(255,255,255,0.8)"
+      />
+    </svg>
+  );
+}
+
+// ─── Main HUD ─────────────────────────────────────────────────────────────────
 export default function GameplayHUD({
   coins,
   lives,
   fuelPct,
-  isLowFuel,
-  fuelColor,
   score,
   currentLevel,
   cargo,
   isPaused,
   onPause,
-  FuelBolt,
-  HeartSVG,
-  CrateSVG,
 }: GameplayHUDProps) {
+  const scoreStr = String(score)
+    .padStart(6, "0")
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
   return (
     <>
-      {/* TOP ROW */}
+      {/* ── TOP ROW: coins | fuel | lives ── */}
       <div
         style={{
           position: "absolute",
           top: 0,
           left: 0,
           right: 0,
-          padding: "18px 14px 0",
+          padding: "10px 12px 0",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
+          gap: 8,
           zIndex: 20,
         }}
       >
-        <div
-          className="scr-hud-glass"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            borderRadius: 999,
-            padding: "6px 14px 6px 7px",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: "50%",
-              background: "radial-gradient(circle at 35% 30%,#ffe57a,#ff9500)",
-              border: "2px solid #ffd84d",
-              boxShadow: "0 0 10px #ffd84d88",
-            }}
-          />
-          <span
-            style={{
-              fontFamily: "'Fredoka One',cursive",
-              fontSize: 17,
-              color: "#ffd84d",
-              textShadow: "0 0 12px #ffd84d88",
-            }}
-          >
-            {coins.toLocaleString()}
-          </span>
-        </div>
+        {/* Coins */}
+        <BracketFrame style={{ ...panelSm, flexShrink: 0 }}>
+          <CoinDisplay value={coins} size="sm" />
+        </BracketFrame>
 
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-          }}
-        >
+        {/* Fuel bar */}
+        <BracketFrame style={{ ...panelSm, flex: 1 }}>
           <div
             style={{
+              fontFamily: FONT.ui,
+              fontWeight: 600,
+              fontSize: 9,
+              letterSpacing: "0.18em",
+              color: COLOR.textMuted,
+              marginBottom: 4,
               display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 4,
+              justifyContent: "space-between",
             }}
           >
-            <FuelBolt />
-
+            <span>⚡ FUEL</span>
             <span
               style={{
-                fontFamily: "'Fredoka One',cursive",
-                fontSize: 11,
-                color: "rgba(180,79,255,0.85)",
-                letterSpacing: 2,
-              }}
-            >
-              FUEL
-            </span>
-
-            <span
-              style={{
-                fontFamily: "'Fredoka One',cursive",
-                fontSize: 11,
-                color: isLowFuel ? "#ff4444" : "rgba(255,255,255,0.38)",
+                color:
+                  fuelPct < 25
+                    ? COLOR.red
+                    : fuelPct < 50
+                      ? COLOR.amber
+                      : COLOR.textMuted,
               }}
             >
               {fuelPct}%
             </span>
           </div>
+          <SegmentedFuelBar pct={fuelPct} segments={12} height={8} />
+        </BracketFrame>
 
-          <div
-            style={{
-              width: "100%",
-              height: 11,
-              background: "rgba(255,255,255,0.06)",
-              borderRadius: 999,
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: `${fuelPct}%`,
-                height: "100%",
-                background: fuelColor,
-                transition: "width .4s ease",
-              }}
-            />
-          </div>
-        </div>
-
-        <div
+        {/* Lives */}
+        <BracketFrame
           style={{
+            ...panelSm,
+            flexShrink: 0,
             display: "flex",
+            gap: 4,
             alignItems: "center",
-            gap: 2,
           }}
         >
           {Array.from({ length: 3 }, (_, i) => (
-            <HeartSVG key={i} filled={i < lives} />
+            <HeartIndicator key={i} filled={i < lives} />
           ))}
-        </div>
+        </BracketFrame>
       </div>
 
-      {/* SECOND ROW */}
+      {/* ── SECOND ROW: score | level | pause ── */}
       <div
         style={{
           position: "absolute",
-          top: 88,
+          top: 72,
           left: 0,
           right: 0,
-          padding: "0 14px",
+          padding: "0 12px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           zIndex: 20,
         }}
       >
-        <div
-          className="scr-hud-glass"
-          style={{
-            borderRadius: 14,
-            padding: "7px 14px",
-            textAlign: "center",
-          }}
-        >
+        {/* Score */}
+        <BracketFrame style={panelSm}>
           <div
             style={{
-              fontSize: 10,
-              fontWeight: 900,
-              color: "rgba(255,255,255,0.32)",
+              fontFamily: FONT.ui,
+              fontWeight: 600,
+              fontSize: 9,
+              letterSpacing: "0.18em",
+              color: COLOR.textMuted,
+              textTransform: "uppercase",
+              marginBottom: 3,
             }}
           >
             SCORE
           </div>
-
           <div
+            className={CLS.numReadout}
             style={{
-              fontFamily: "'Fredoka One',cursive",
+              fontFamily: FONT.mono,
+              fontSize: 20,
+              fontWeight: 700,
               color: "#fff",
-              fontSize: 21,
+              lineHeight: 1,
             }}
           >
-            {score.toLocaleString()}
+            {scoreStr}
+          </div>
+        </BracketFrame>
+
+        {/* Level — instrument dial style */}
+        <div
+          style={{
+            padding: "6px 18px",
+            border: `1px solid rgba(0,229,255,0.3)`,
+            borderRadius: RADIUS.md,
+            background: "rgba(0,229,255,0.06)",
+            textAlign: "center",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONT.ui,
+              fontWeight: 600,
+              fontSize: 9,
+              letterSpacing: "0.18em",
+              color: COLOR.textMuted,
+              textTransform: "uppercase",
+              marginBottom: 2,
+            }}
+          >
+            LEVEL
+          </div>
+          <div
+            className={CLS.numReadout}
+            style={{
+              fontFamily: FONT.mono,
+              fontSize: 18,
+              fontWeight: 700,
+              color: COLOR.cyan,
+              lineHeight: 1,
+            }}
+          >
+            {String(currentLevel).padStart(2, "0")}
           </div>
         </div>
 
-        <div
-          className="scr-hud-glass"
-          style={{
-            borderRadius: 999,
-            padding: "6px 16px",
-          }}
-        >
-          <span
-            style={{
-              color: "#4fc3ff",
-              fontFamily: "'Fredoka One',cursive",
-            }}
-          >
-            LVL {String(currentLevel).padStart(2, "0")}
-          </span>
-        </div>
-
+        {/* Pause button */}
         <button
           onClick={onPause}
           style={{
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            border: "2px solid #c966ff",
-            background: "rgba(30,0,60,0.85)",
-            color: "#ffffff",
-            boxShadow: `
-    0 0 12px #c966ff,
-    inset 0 0 8px rgba(255,255,255,0.15)
-  `,
+            width: 38,
+            height: 38,
+            borderRadius: RADIUS.md,
+            border: `1px solid rgba(0,229,255,0.3)`,
+            background: "rgba(17,24,39,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             cursor: "pointer",
-            fontSize: 18,
-            fontWeight: 700,
+            boxShadow:
+              "inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 0 rgba(0,0,0,0.4)",
+            backdropFilter: "blur(8px)",
+            transition: "border-color 0.15s, background 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor =
+              COLOR.borderActive;
+            (e.currentTarget as HTMLButtonElement).style.background =
+              "rgba(0,229,255,0.1)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor =
+              "rgba(0,229,255,0.3)";
+            (e.currentTarget as HTMLButtonElement).style.background =
+              "rgba(17,24,39,0.85)";
           }}
         >
-          {isPaused ? "▶" : "❚❚"}
+          <PauseIcon isPaused={isPaused} />
         </button>
       </div>
 
-      {/* BOTTOM ROW */}
+      {/* ── BOTTOM ROW: cargo | distance ── */}
       <div
         style={{
           position: "absolute",
-          bottom: 18,
+          bottom: 14,
           left: 0,
           right: 0,
-          padding: "0 14px",
+          padding: "0 12px",
           display: "flex",
           justifyContent: "space-between",
           zIndex: 20,
         }}
       >
-        <div
-          className="scr-hud-glass"
-          style={{
-            display: "flex",
-            gap: 8,
-            alignItems: "center",
-            borderRadius: 14,
-            padding: "8px 14px",
-          }}
+        {/* Cargo */}
+        <BracketFrame
+          style={{ ...panelSm, display: "flex", gap: 8, alignItems: "center" }}
         >
-          <CrateSVG size={28} />
-
+          <CrateIcon size={22} />
           <div>
             <div
               style={{
-                fontSize: 10,
-                color: "rgba(255,216,77,0.55)",
-                fontWeight: 900,
+                fontFamily: FONT.ui,
+                fontWeight: 600,
+                fontSize: 9,
+                letterSpacing: "0.18em",
+                color: COLOR.textMuted,
+                textTransform: "uppercase",
               }}
             >
               CARGO
             </div>
-
             <div
+              className={CLS.numReadout}
               style={{
-                color: "#ffd84d",
-                fontFamily: "'Fredoka One',cursive",
-                fontSize: 24,
+                fontFamily: FONT.mono,
+                fontSize: 20,
+                fontWeight: 700,
+                color: "#fff",
+                lineHeight: 1,
               }}
             >
               {cargo}
             </div>
           </div>
-        </div>
+        </BracketFrame>
 
-        <div
-          className="scr-hud-glass"
-          style={{
-            borderRadius: 14,
-            padding: "8px 16px",
-            textAlign: "center",
-          }}
-        >
+        {/* Distance */}
+        <BracketFrame style={{ ...panelSm, textAlign: "right" }}>
           <div
             style={{
-              fontSize: 10,
-              color: "rgba(255,255,255,0.3)",
+              fontFamily: FONT.ui,
+              fontWeight: 600,
+              fontSize: 9,
+              letterSpacing: "0.18em",
+              color: COLOR.textMuted,
+              textTransform: "uppercase",
+              marginBottom: 3,
             }}
           >
             DIST
           </div>
-
           <div
+            className={CLS.numReadout}
             style={{
-              color: "#4fc3ff",
-              fontFamily: "'Fredoka One',cursive",
+              fontFamily: FONT.mono,
               fontSize: 18,
+              fontWeight: 700,
+              color: "#fff",
+              lineHeight: 1,
             }}
           >
-            {(score / 100).toFixed(1)}km
+            {(score / 100).toFixed(1)}
+            <span
+              style={{
+                fontSize: 12,
+                color: COLOR.textSecondary,
+                marginLeft: 2,
+              }}
+            >
+              km
+            </span>
           </div>
-        </div>
+        </BracketFrame>
       </div>
     </>
   );
 }
+
+// ─── Shared panel style for HUD modules ───────────────────────────────────────
+const panelSm: React.CSSProperties = {
+  background: "rgba(17,24,39,0.85)",
+  backdropFilter: "blur(12px) saturate(1.3)",
+  WebkitBackdropFilter: "blur(12px) saturate(1.3)",
+  border: "1px solid rgba(0,229,255,0.18)",
+  borderRadius: RADIUS.md,
+  boxShadow: "0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+  padding: "8px 12px",
+};
