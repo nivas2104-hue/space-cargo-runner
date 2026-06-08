@@ -3,9 +3,8 @@ import MainMenu from "./components/MainMenu";
 import Hangar from "./components/Hangar";
 import GameOver from "./components/GameOver";
 import GameplayScreen from "./components/GameplayScreen";
-
-type Screen = "menu" | "hangar" | "gameplay" | "gameover";
-
+import Profile from "./components/Profile";
+type Screen = "menu" | "hangar" | "gameplay" | "gameover" | "profile";
 export default function App() {
   const [screen, setScreen] = useState<Screen>("menu");
 
@@ -20,7 +19,7 @@ export default function App() {
   const [bestScore, setBestScore] = useState(() =>
     Number(localStorage.getItem("bestScore") || 0),
   );
-
+  const [xp, setXp] = useState(0);
   const [username] = useState(() => {
     let name = localStorage.getItem("username");
 
@@ -45,7 +44,13 @@ export default function App() {
       }),
     })
       .then((r) => r.json())
-      .then((data) => console.log("User Saved", data))
+      .then((data) => {
+        console.log("User Saved", data);
+
+        if (data.user) {
+          setXp(data.user.xp || 0);
+        }
+      })
       .catch(console.error);
   }, [username]);
 
@@ -54,6 +59,7 @@ export default function App() {
       <MainMenu
         onStart={() => setScreen("gameplay")}
         onHangar={() => setScreen("hangar")}
+        onProfile={() => setScreen("profile")}
       />
     );
   }
@@ -67,7 +73,17 @@ export default function App() {
       />
     );
   }
-
+  if (screen === "profile") {
+    return (
+      <Profile
+        username={username}
+        xp={xp}
+        bestScore={bestScore}
+        totalCoins={totalCoins}
+        onBack={() => setScreen("menu")}
+      />
+    );
+  }
   if (screen === "gameplay") {
     return (
       <GameplayScreen

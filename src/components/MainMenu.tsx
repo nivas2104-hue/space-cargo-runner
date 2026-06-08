@@ -5,6 +5,7 @@ import WalletConnect from "./WalletConnect";
 interface MainMenuProps {
   onStart: () => void;
   onHangar: () => void;
+  onProfile: () => void;
 }
 
 // ─── SVG Ship (uses ship.png via <image> tag so real asset is respected) ──────
@@ -248,7 +249,11 @@ const injectStyles = () => {
 };
 
 // ─── Main Component ────────────────────────────────────────────────────────────
-export default function MainMenu({ onStart, onHangar }: MainMenuProps) {
+export default function MainMenu({
+  onStart,
+  onHangar,
+  onProfile,
+}: MainMenuProps) {
   const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -559,7 +564,25 @@ export default function MainMenu({ onStart, onHangar }: MainMenuProps) {
         >
           🛸 HANGAR
         </button>
-
+        <button
+          onClick={onProfile}
+          style={{
+            fontFamily: "'Fredoka One', cursive",
+            fontSize: 18,
+            letterSpacing: 2,
+            color: "#fff",
+            background: "rgba(7,0,28,0.7)",
+            border: "1.5px solid rgba(79,195,255,0.5)",
+            borderRadius: 999,
+            padding: "12px 0",
+            width: "100%",
+            cursor: "pointer",
+            boxShadow: "0 0 18px #4fc3ff55",
+            backdropFilter: "blur(6px)",
+          }}
+        >
+          👤 PROFILE
+        </button>
         <WalletConnect />
       </div>
     </div>
