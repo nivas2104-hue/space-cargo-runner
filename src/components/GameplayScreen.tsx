@@ -165,14 +165,6 @@ const spawnDrone = (r: () => number): Drone => {
 };
 
 // ─── Ship theme — updated to design-system palette ───────────────────────────
-const SHIP_THEMES: Record<string, string> = {
-  viper: COLOR.cyan,
-  falcon: COLOR.cyanSoft,
-  storm: "#FF6688",
-  nebula: COLOR.amber,
-  phantom: COLOR.green,
-  nova: "#FF44CC",
-};
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function GameplayScreen({
@@ -243,8 +235,6 @@ export default function GameplayScreen({
   const gameTimeRef = useRef(0);
   const popupCounter = useRef(0);
   const lastTimeRef = useRef(performance.now());
-
-  const shipTheme = SHIP_THEMES[selectedShip] ?? COLOR.cyan;
 
   const savedShips = JSON.parse(localStorage.getItem("ships") || "[]");
   const currentShip = savedShips.find((s: any) => s.id === selectedShip);
@@ -327,15 +317,19 @@ export default function GameplayScreen({
     [],
   );
 
-  const SHIP_HITBOX_WIDTH = 7;
-  const SHIP_HITBOX_HEIGHT = 6;
+  const checkCollision = (
+    shipX: number,
+    objX: number,
+    objY: number,
+    thresholdX = 7,
+    thresholdY = 6,
+  ) => {
+    const SHIP_Y = 70;
 
-  const checkCollision = (shipX: number, objX: number, objY: number) => {
-    const noseHit = Math.abs(shipX - objX) <= 4 && Math.abs(70 - objY) <= 4;
-
-    const wingHit = Math.abs(shipX - objX) <= 8 && Math.abs(76 - objY) <= 3;
-
-    return noseHit || wingHit;
+    return (
+      Math.abs(shipX - objX) <= thresholdX &&
+      Math.abs(SHIP_Y - objY) <= thresholdY
+    );
   };
 
   const addScorePopup = (x: number, y: number, val: string) => {
