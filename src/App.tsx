@@ -12,7 +12,22 @@ export default function App() {
     injectGlobalStyles();
   }, []);
   const [screen, setScreen] = useState<Screen>("menu");
+  useEffect(() => {
+    const tgUser = getTelegramUser();
 
+    if (!tgUser) return;
+
+    fetch("https://space-cargo-runner.onrender.com/user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: tgUser.username,
+        telegramId: tgUser.id,
+      }),
+    });
+  }, []);
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoins, setFinalCoins] = useState(0);
   const [finalCargo, setFinalCargo] = useState(0);
@@ -157,13 +172,25 @@ export default function App() {
             }),
           })
             .then((r) => r.json())
-            .then((data) => {
+            .then(async (data) => {
               console.log("SCORE RESPONSE", data);
-              console.log("Leaderboard Updated", data);
 
               if (data.xpEarned) {
                 setXp((prev) => prev + data.xpEarned);
               }
+
+              await fetch("https://space-cargo-runner.onrender.com/session", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  userId,
+                  score,
+                  coins,
+                  cargo,
+                }),
+              });
 
               setScreen("gameover");
             })

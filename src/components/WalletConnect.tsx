@@ -18,6 +18,16 @@ export default function WalletConnect() {
       setAddress(accounts[0]);
 
       localStorage.setItem("walletAddress", accounts[0]);
+
+      await fetch("https://space-cargo-runner.onrender.com/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          walletAddress: accounts[0],
+        }),
+      });
     } catch (err) {
       console.error(err);
     }
