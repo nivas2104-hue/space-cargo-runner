@@ -15,6 +15,7 @@ export default function App() {
   useEffect(() => {
     const tgUser = getTelegramUser();
 
+    console.log("TELEGRAM USER:", tgUser);
     if (!tgUser) return;
 
     fetch("https://space-cargo-runner.onrender.com/user", {
