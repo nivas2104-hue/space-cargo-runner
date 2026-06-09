@@ -50,6 +50,7 @@ export default function App() {
   );
   const [xp, setXp] = useState(0);
   const tgUser = getTelegramUser();
+
   const [selectedShip, setSelectedShip] = useState(
     localStorage.getItem("selectedShip") || "VIPER_MK1",
   );
@@ -90,7 +91,8 @@ export default function App() {
       })
       .catch(console.error);
   }, [username]);
-
+  console.log("TG USER", tgUser);
+  console.log("USERNAME STATE", username);
   if (screen === "menu") {
     return (
       <MainMenu
