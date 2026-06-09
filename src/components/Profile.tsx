@@ -1,3 +1,15 @@
+import { useEffect } from "react";
+import {
+  COLOR,
+  FONT,
+  RADIUS,
+  CLS,
+  BracketFrame,
+  PrimaryButton,
+  CoinDisplay,
+  injectGlobalStyles,
+} from "./design-system";
+
 type Props = {
   username: string;
   xp: number;
@@ -13,97 +25,261 @@ export default function Profile({
   totalCoins,
   onBack,
 }: Props) {
+  useEffect(() => {
+    injectGlobalStyles();
+  }, []);
+
   const level = Math.floor(xp / 200) + 1;
   const xpProgress = xp % 200;
+  const xpPct = (xpProgress / 200) * 100;
+  const loginType =
+    localStorage.getItem("loginType") === "telegram" ? "TELEGRAM" : "GUEST";
+
+  const stats = [
+    { label: "LEVEL", value: String(level), color: COLOR.cyan },
+    {
+      label: "BEST SCORE",
+      value: Number(bestScore).toLocaleString(),
+      color: "#fff",
+    },
+    {
+      label: "TOTAL XP",
+      value: Number(xp).toLocaleString(),
+      color: COLOR.amber,
+    },
+    {
+      label: "LOGIN TYPE",
+      value: loginType,
+      color: COLOR.textSecondary,
+      isText: true,
+    },
+  ];
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#07001c",
-        color: "white",
+        background: `radial-gradient(ellipse at 50% 25%, #0D1830 0%, ${COLOR.bgDeep} 65%)`,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         padding: "20px",
       }}
     >
-      <div
+      <BracketFrame
         style={{
-          width: "400px",
-          border: "2px solid #8a2be2",
-          borderRadius: "20px",
-          padding: "30px",
-          background: "#120028",
-          boxShadow: "0 0 25px #8a2be2",
+          width: "100%",
+          maxWidth: 380,
+          background: "rgba(17,24,39,0.9)",
+          backdropFilter: "blur(16px)",
+          border: `1px solid ${COLOR.borderPanel}`,
+          borderRadius: RADIUS.md,
+          padding: "28px 24px",
+          boxShadow:
+            "0 12px 50px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
+          animation: "fadeUp 0.4s ease both",
         }}
       >
-        <h1
-          style={{
-            textAlign: "center",
-            color: "#d38cff",
-            marginBottom: "20px",
-          }}
-        >
-          PLAYER PROFILE
-        </h1>
-
-        <h2
-          style={{
-            textAlign: "center",
-            color: "#ffffff",
-          }}
-        >
-          {username}
-        </h2>
-
-        <p>⭐ Level: {level}</p>
-
-        <p>✨ XP: {xp}</p>
-        <p>
-          Login Type:{" "}
-          {localStorage.getItem("loginType") === "telegram"
-            ? "Telegram"
-            : "Guest"}
-        </p>
-        <div
-          style={{
-            height: "12px",
-            background: "#2d174d",
-            borderRadius: "10px",
-            overflow: "hidden",
-            marginBottom: "20px",
-          }}
-        >
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 22 }}>
           <div
             style={{
-              width: `${(xpProgress / 200) * 100}%`,
-              height: "100%",
-              background: "#ffd700",
+              width: 32,
+              height: 2,
+              background: COLOR.cyan,
+              margin: "0 auto 14px",
+              boxShadow: "0 0 8px rgba(0,229,255,0.8)",
             }}
           />
+          <div
+            style={{
+              fontFamily: FONT.heading,
+              fontWeight: 900,
+              fontSize: 18,
+              letterSpacing: "0.2em",
+              color: "#fff",
+              marginBottom: 8,
+            }}
+          >
+            PLAYER PROFILE
+          </div>
+
+          {/* Username badge */}
+          <div
+            style={{
+              display: "inline-block",
+              background: "rgba(0,229,255,0.06)",
+              border: `1px solid ${COLOR.borderPanel}`,
+              borderRadius: RADIUS.md,
+              padding: "6px 18px",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: FONT.ui,
+                fontWeight: 600,
+                fontSize: 16,
+                letterSpacing: "0.08em",
+                color: COLOR.cyan,
+              }}
+            >
+              {username}
+            </span>
+          </div>
         </div>
 
-        <p>🏆 Best Score: {bestScore}</p>
+        {/* XP progress bar */}
+        <div style={{ marginBottom: 20 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 6,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: FONT.ui,
+                fontWeight: 600,
+                fontSize: 10,
+                letterSpacing: "0.15em",
+                color: COLOR.textMuted,
+                textTransform: "uppercase",
+              }}
+            >
+              XP PROGRESS
+            </span>
+            <span
+              className={CLS.numReadout}
+              style={{
+                fontFamily: FONT.mono,
+                fontSize: 11,
+                color: COLOR.amber,
+              }}
+            >
+              {xpProgress} / 200
+            </span>
+          </div>
+          <div
+            style={{
+              height: 8,
+              background: "rgba(255,255,255,0.07)",
+              borderRadius: 2,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${xpPct}%`,
+                height: "100%",
+                borderRadius: 2,
+                background: `linear-gradient(90deg, ${COLOR.amber}, #FFD080)`,
+                boxShadow: `0 0 8px ${COLOR.amberGlow}`,
+                transition: "width 0.6s ease",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              fontFamily: FONT.ui,
+              fontSize: 10,
+              color: COLOR.textMuted,
+              marginTop: 4,
+              textAlign: "right",
+            }}
+          >
+            LVL {level} → LVL {level + 1}
+          </div>
+        </div>
 
-        <p>🪙 Total Coins: {totalCoins}</p>
-
-        <button
-          onClick={onBack}
+        {/* Stats */}
+        <div
           style={{
-            width: "100%",
-            marginTop: "20px",
-            padding: "12px",
-            borderRadius: "10px",
-            border: "none",
-            background: "#ffd700",
-            fontWeight: "bold",
-            cursor: "pointer",
+            display: "flex",
+            flexDirection: "column",
+            gap: 0,
+            marginBottom: 20,
           }}
         >
-          BACK
-        </button>
-      </div>
+          {stats.map((s, i) => (
+            <div
+              key={s.label}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "10px 0",
+                borderBottom:
+                  i < stats.length - 1
+                    ? "1px solid rgba(255,255,255,0.06)"
+                    : "none",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: FONT.ui,
+                  fontWeight: 600,
+                  fontSize: 11,
+                  letterSpacing: "0.15em",
+                  color: COLOR.textMuted,
+                  textTransform: "uppercase",
+                }}
+              >
+                {s.label}
+              </span>
+              {s.isText ? (
+                <span
+                  style={{
+                    fontFamily: FONT.ui,
+                    fontWeight: 700,
+                    fontSize: 13,
+                    color: s.color,
+                    letterSpacing: "0.1em",
+                  }}
+                >
+                  {s.value}
+                </span>
+              ) : (
+                <span
+                  className={CLS.numReadout}
+                  style={{
+                    fontFamily: FONT.mono,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: s.color,
+                  }}
+                >
+                  {s.value}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Coins readout */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "12px",
+            background: "rgba(255,181,71,0.06)",
+            border: "1px solid rgba(255,181,71,0.2)",
+            borderRadius: RADIUS.md,
+            marginBottom: 20,
+          }}
+        >
+          <CoinDisplay value={totalCoins} size="lg" />
+        </div>
+
+        <PrimaryButton
+          onClick={onBack}
+          style={{ width: "100%", padding: "13px 0", fontSize: 14 }}
+        >
+          ← BACK
+        </PrimaryButton>
+      </BracketFrame>
     </div>
   );
 }

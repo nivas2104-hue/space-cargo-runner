@@ -4,8 +4,13 @@ import Hangar from "./components/Hangar";
 import GameOver from "./components/GameOver";
 import GameplayScreen from "./components/GameplayScreen";
 import Profile from "./components/Profile";
+import { getTelegramUser } from "./utils/telegram";
+import { injectGlobalStyles } from "./components/design-system";
 type Screen = "menu" | "hangar" | "gameplay" | "gameover" | "profile";
 export default function App() {
+  useEffect(() => {
+    injectGlobalStyles();
+  }, []);
   const [screen, setScreen] = useState<Screen>("menu");
 
   const [finalScore, setFinalScore] = useState(0);
@@ -20,14 +25,19 @@ export default function App() {
     Number(localStorage.getItem("bestScore") || 0),
   );
   const [xp, setXp] = useState(0);
+  const tgUser = getTelegramUser();
+
   const [username] = useState(() => {
+    if (tgUser?.username) {
+      localStorage.setItem("username", tgUser.username);
+      return tgUser.username;
+    }
+
     let name = localStorage.getItem("username");
 
     if (!name) {
-      name = prompt("Enter Username") || "Guest";
-
+      name = "Guest";
       localStorage.setItem("username", name);
-      localStorage.setItem("loginType", "guest");
     }
 
     return name;
@@ -39,10 +49,9 @@ export default function App() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        userId: username,
-        wallet: localStorage.getItem("walletAddress"),
-        telegramUsername:
-          localStorage.getItem("loginType") === "telegram" ? username : null,
+        username: tgUser?.username || username,
+        telegramId: tgUser?.id?.toString() || null,
+        walletAddress: localStorage.getItem("walletAddress"),
       }),
     })
       .then((r) => r.json())
@@ -100,7 +109,10 @@ export default function App() {
           setFinalCoins(coins);
           setFinalCargo(cargo);
 
-          const userId = localStorage.getItem("walletAddress") || username;
+          const userId =
+            tgUser?.id?.toString() ||
+            localStorage.getItem("walletAddress") ||
+            username;
           const leaderboard = JSON.parse(
             localStorage.getItem("leaderboard") ?? "[]",
           );

@@ -1,3 +1,14 @@
+import {
+  COLOR,
+  FONT,
+  RADIUS,
+  CLS,
+  BracketFrame,
+  PrimaryButton,
+  injectGlobalStyles,
+} from "../design-system";
+import { useEffect } from "react";
+
 interface PauseOverlayProps {
   score: number;
   coins: number;
@@ -11,116 +22,147 @@ export default function PauseOverlay({
   cargo,
   onResume,
 }: PauseOverlayProps) {
+  useEffect(() => {
+    injectGlobalStyles();
+  }, []);
+
+  const rows = [
+    { label: "SCORE", value: score.toLocaleString(), color: "#fff" },
+    { label: "COINS", value: coins.toLocaleString(), color: COLOR.amber },
+    { label: "CARGO", value: `${cargo} crates`, color: COLOR.cyan },
+  ];
+
   return (
     <div
+      onClick={onResume}
       style={{
         position: "absolute",
         inset: 0,
-        background: "rgba(7,0,28,0.82)",
-        backdropFilter: "blur(6px)",
+        zIndex: 50,
+        background: "rgba(7,12,28,0.88)",
+        backdropFilter: "blur(10px)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 50,
+        animation: "fadeIn 0.18s ease both",
       }}
     >
+      {/* Prevent click-through from inner card closing immediately */}
       <div
-        style={{
-          fontFamily: "'Fredoka One',cursive",
-          fontSize: 52,
-          letterSpacing: 4,
-          background:
-            "linear-gradient(180deg,#fff 0%,#c8aaff 40%,#7b00e0 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          filter: "drop-shadow(0 0 22px #b44fff)",
-          marginBottom: 8,
-        }}
-      >
-        PAUSED
-      </div>
-
-      <div
-        style={{
-          fontSize: 12,
-          fontWeight: 900,
-          color: "rgba(255,255,255,0.28)",
-          letterSpacing: 5,
-          textTransform: "uppercase",
-          marginBottom: 32,
-        }}
-      >
-        tap anywhere to resume
-      </div>
-
-      <div
+        onClick={(e) => e.stopPropagation()}
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 8,
           alignItems: "center",
+          gap: 0,
         }}
       >
-        {[
-          { label: "Score", val: score.toLocaleString(), color: "#fff" },
-          { label: "Coins", val: `🪙 ${coins}`, color: "#ffd84d" },
-          { label: "Cargo", val: `${cargo} crates`, color: "#ffd84d" },
-        ].map((row) => (
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 22 }}>
           <div
-            key={row.label}
             style={{
-              display: "flex",
-              gap: 20,
-              alignItems: "center",
+              width: 32,
+              height: 2,
+              background: COLOR.cyan,
+              margin: "0 auto 12px",
+              boxShadow: "0 0 8px rgba(0,229,255,0.8)",
+            }}
+          />
+          <div
+            style={{
+              fontFamily: FONT.heading,
+              fontWeight: 900,
+              fontSize: 42,
+              letterSpacing: "0.18em",
+              color: "#fff",
+              textShadow: "0 0 24px rgba(0,229,255,0.5)",
+              lineHeight: 1,
             }}
           >
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 900,
-                color: "rgba(255,255,255,0.32)",
-                letterSpacing: 2,
-                width: 50,
-                textAlign: "right",
-              }}
-            >
-              {row.label}
-            </span>
-
-            <span
-              style={{
-                fontFamily: "'Fredoka One',cursive",
-                fontSize: 20,
-                color: row.color,
-                textShadow: `0 0 10px ${row.color}55`,
-              }}
-            >
-              {row.val}
-            </span>
+            PAUSED
           </div>
-        ))}
-      </div>
+          <div
+            style={{
+              fontFamily: FONT.ui,
+              fontWeight: 600,
+              fontSize: 11,
+              letterSpacing: "0.28em",
+              color: COLOR.textMuted,
+              textTransform: "uppercase",
+              marginTop: 6,
+            }}
+          >
+            TAP ANYWHERE TO RESUME
+          </div>
+        </div>
 
-      <button
-        onClick={onResume}
-        style={{
-          marginTop: 32,
-          fontFamily: "'Fredoka One',cursive",
-          fontSize: 22,
-          letterSpacing: 3,
-          color: "#fff",
-          background: "linear-gradient(180deg,#c966ff,#6600cc)",
-          border: "none",
-          borderRadius: 999,
-          padding: "14px 48px",
-          cursor: "pointer",
-          boxShadow: "0 5px 0 #3d007a, 0 0 22px #b44fff55",
-        }}
-      >
-        ▶ RESUME
-      </button>
+        {/* Stats */}
+        <BracketFrame
+          style={{
+            background: "rgba(17,24,39,0.85)",
+            backdropFilter: "blur(12px)",
+            border: `1px solid ${COLOR.borderPanel}`,
+            borderRadius: RADIUS.md,
+            padding: "16px 28px",
+            marginBottom: 20,
+            minWidth: 220,
+            boxShadow:
+              "0 6px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
+        >
+          {rows.map((row, i) => (
+            <div
+              key={row.label}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingBottom: i < rows.length - 1 ? 9 : 0,
+                marginBottom: i < rows.length - 1 ? 9 : 0,
+                borderBottom:
+                  i < rows.length - 1
+                    ? "1px solid rgba(255,255,255,0.06)"
+                    : "none",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: FONT.ui,
+                  fontWeight: 600,
+                  fontSize: 11,
+                  letterSpacing: "0.15em",
+                  color: COLOR.textMuted,
+                  textTransform: "uppercase",
+                }}
+              >
+                {row.label}
+              </span>
+              <span
+                className={CLS.numReadout}
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: row.color,
+                  marginLeft: 24,
+                }}
+              >
+                {row.value}
+              </span>
+            </div>
+          ))}
+        </BracketFrame>
+
+        {/* Resume button */}
+        <PrimaryButton
+          onClick={onResume}
+          pulse
+          style={{ padding: "13px 48px", fontSize: 15 }}
+        >
+          ▶ &nbsp;RESUME
+        </PrimaryButton>
+      </div>
     </div>
   );
 }

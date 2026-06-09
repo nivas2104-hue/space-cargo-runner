@@ -1,3 +1,8 @@
+// BackgroundEffects — updated to use design system palette
+// Navy/cyan nebulas replace the old purple blobs
+// Warp lines use cyan → soft cyan gradient (consistent with UI accent)
+// All logic and props unchanged — pure visual layer update
+
 interface Star {
   id: number;
   x: number;
@@ -7,7 +12,6 @@ interface Star {
   delay: number;
   color: string;
 }
-
 interface WarpLine {
   id: number;
   x: number;
@@ -17,7 +21,6 @@ interface WarpLine {
   delay: number;
   opacity: number;
 }
-
 interface BackgroundEffectsProps {
   stars: Star[];
   warpLines: WarpLine[];
@@ -31,6 +34,7 @@ export default function BackgroundEffects({
 }: BackgroundEffectsProps) {
   return (
     <>
+      {/* Nebula blob — top-left, deep navy */}
       <div
         style={{
           position: "absolute",
@@ -39,13 +43,14 @@ export default function BackgroundEffects({
           top: -100,
           left: -120,
           borderRadius: "50%",
-          background: "rgba(100,0,200,0.16)",
+          background: "rgba(0,80,160,0.1)",
           filter: "blur(80px)",
           pointerEvents: "none",
           animation: "nebulaDrift 18s ease-in-out infinite",
         }}
       />
 
+      {/* Nebula blob — mid-right, cyan hint */}
       <div
         style={{
           position: "absolute",
@@ -54,13 +59,14 @@ export default function BackgroundEffects({
           top: "30%",
           right: -100,
           borderRadius: "50%",
-          background: "rgba(0,60,180,0.12)",
+          background: "rgba(0,150,200,0.07)",
           filter: "blur(70px)",
           pointerEvents: "none",
           animation: "nebulaDrift 22s 4s ease-in-out infinite",
         }}
       />
 
+      {/* Nebula blob — bottom-left, darker */}
       <div
         style={{
           position: "absolute",
@@ -69,13 +75,14 @@ export default function BackgroundEffects({
           bottom: "20%",
           left: -60,
           borderRadius: "50%",
-          background: "rgba(180,0,100,0.1)",
+          background: "rgba(0,60,120,0.08)",
           filter: "blur(60px)",
           pointerEvents: "none",
           animation: "nebulaDrift 26s 8s ease-in-out infinite",
         }}
       />
 
+      {/* Warp lines — cyan consistent with UI */}
       {warpLines.map((l) => {
         const warpOpacity =
           level < 5
@@ -93,36 +100,26 @@ export default function BackgroundEffects({
               position: "absolute",
               left: `${l.x}%`,
               top: 0,
-
               width: 2 + level * 0.3,
-
               height: 60 + level * 4,
               transform: "rotate(-12deg)",
               background: `linear-gradient(
-          180deg,
-          transparent,
-          rgba(79,195,255,${warpOpacity}),
-          rgba(180,79,255,${warpOpacity}),
-          transparent
-        )`,
-
-              boxShadow: `
-          0 0 6px rgba(79,195,255,${warpOpacity}),
-          0 0 12px rgba(180,79,255,${warpOpacity})
-        `,
-
-              filter: `blur(${Math.min(1 + level * 0.05, 3)}px)`,
-
-              animation: `warpLine ${Math.max(
-                l.duration - level * 0.03,
-                1.5,
-              )}s ${l.delay}s linear infinite`,
-
+              180deg,
+              transparent,
+              rgba(0,229,255,${warpOpacity * 0.7}),
+              rgba(79,209,255,${warpOpacity}),
+              transparent
+            )`,
+              boxShadow: `0 0 6px rgba(0,229,255,${warpOpacity * 0.5})`,
+              filter: `blur(${Math.min(1 + level * 0.05, 2.5)}px)`,
+              animation: `warpLine ${Math.max(l.duration - level * 0.03, 1.5)}s ${l.delay}s linear infinite`,
               pointerEvents: "none",
             }}
           />
         );
       })}
+
+      {/* Stars */}
       {stars.map((s) => (
         <div
           key={s.id}

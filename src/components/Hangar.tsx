@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from "react";
-import type { CSSProperties } from "react";
+import {
+  COLOR,
+  FONT,
+  RADIUS,
+  BracketFrame,
+  PrimaryButton,
+  SecondaryButton,
+  CoinDisplay,
+  injectGlobalStyles,
+} from "./design-system";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface HangarProps {
   coins: number;
   onBack: () => void;
   onShipSelect: (shipId: string) => void;
 }
-
 interface Ship {
   id: string;
   name: string;
@@ -20,7 +29,6 @@ interface Ship {
   accent: string;
   thruster: string;
 }
-
 interface Upgrade {
   id: string;
   name: string;
@@ -31,7 +39,6 @@ interface Upgrade {
   iconBg: string;
   iconBorder: string;
 }
-
 interface Powerup {
   id: string;
   name: string;
@@ -43,7 +50,7 @@ interface Powerup {
   iconBg: string;
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Data (unchanged) ─────────────────────────────────────────────────────────
 const SHIPS: Ship[] = [
   {
     id: "viper",
@@ -54,9 +61,9 @@ const SHIPS: Ship[] = [
     cap: 45,
     price: 0,
     owned: true,
-    color: "#7b00e0",
-    accent: "#b44fff",
-    thruster: "#b44fff",
+    color: "#0D2040",
+    accent: COLOR.cyan,
+    thruster: COLOR.cyan,
   },
   {
     id: "falcon",
@@ -67,9 +74,9 @@ const SHIPS: Ship[] = [
     cap: 60,
     price: 800,
     owned: false,
-    color: "#0055cc",
-    accent: "#4fc3ff",
-    thruster: "#4fc3ff",
+    color: "#0D2040",
+    accent: COLOR.cyanSoft,
+    thruster: COLOR.cyanSoft,
   },
   {
     id: "storm",
@@ -80,9 +87,9 @@ const SHIPS: Ship[] = [
     cap: 50,
     price: 1200,
     owned: false,
-    color: "#cc1144",
-    accent: "#ff6688",
-    thruster: "#ff4466",
+    color: "#201020",
+    accent: "#FF6688",
+    thruster: "#FF4466",
   },
   {
     id: "nebula",
@@ -93,9 +100,9 @@ const SHIPS: Ship[] = [
     cap: 85,
     price: 2500,
     owned: false,
-    color: "#aa6600",
-    accent: "#ffd84d",
-    thruster: "#ffcc00",
+    color: "#1A1000",
+    accent: COLOR.amber,
+    thruster: "#FFD040",
   },
   {
     id: "phantom",
@@ -106,9 +113,9 @@ const SHIPS: Ship[] = [
     cap: 90,
     price: 4000,
     owned: false,
-    color: "#006644",
-    accent: "#00ffaa",
-    thruster: "#00ffcc",
+    color: "#001A10",
+    accent: COLOR.green,
+    thruster: "#00FFCC",
   },
 ];
 
@@ -120,8 +127,8 @@ const UPGRADES: Upgrade[] = [
     emoji: "🚀",
     levels: [0, 200, 400, 800],
     cur: 1,
-    iconBg: "linear-gradient(135deg,#1133aa44,#4488ff22)",
-    iconBorder: "#4488ff55",
+    iconBg: "linear-gradient(135deg,#0A1A3A,#0D2A5A)",
+    iconBorder: "rgba(0,229,255,0.3)",
   },
   {
     id: "shield",
@@ -130,8 +137,8 @@ const UPGRADES: Upgrade[] = [
     emoji: "🛡️",
     levels: [0, 250, 500, 1000],
     cur: 3,
-    iconBg: "linear-gradient(135deg,#004433,#00ffaa22)",
-    iconBorder: "#44ffaa55",
+    iconBg: "linear-gradient(135deg,#001A12,#003320)",
+    iconBorder: "rgba(0,229,160,0.3)",
   },
   {
     id: "fuel",
@@ -140,8 +147,8 @@ const UPGRADES: Upgrade[] = [
     emoji: "⚡",
     levels: [0, 180, 360, 720],
     cur: 0,
-    iconBg: "linear-gradient(135deg,#443300,#ffcc0022)",
-    iconBorder: "#ffcc0055",
+    iconBg: "linear-gradient(135deg,#1A1000,#2A1800)",
+    iconBorder: "rgba(255,181,71,0.3)",
   },
   {
     id: "magnet",
@@ -150,8 +157,8 @@ const UPGRADES: Upgrade[] = [
     emoji: "🧲",
     levels: [0, 300, 600],
     cur: 2,
-    iconBg: "linear-gradient(135deg,#440033,#ff88cc22)",
-    iconBorder: "#ff88cc55",
+    iconBg: "linear-gradient(135deg,#1A0020,#2A0040)",
+    iconBorder: "rgba(0,229,255,0.2)",
   },
 ];
 
@@ -164,7 +171,7 @@ const POWERUPS: Powerup[] = [
     price: 150,
     qty: 2,
     isNew: true,
-    iconBg: "linear-gradient(135deg,#002244,#4fc3ff22)",
+    iconBg: "linear-gradient(135deg,#001A30,rgba(0,229,255,0.1))",
   },
   {
     id: "fuel_pu",
@@ -174,7 +181,7 @@ const POWERUPS: Powerup[] = [
     price: 100,
     qty: 0,
     isNew: false,
-    iconBg: "linear-gradient(135deg,#003322,#00ffaa22)",
+    iconBg: "linear-gradient(135deg,#001A10,rgba(0,229,160,0.1))",
   },
   {
     id: "magnet_pu",
@@ -184,7 +191,7 @@ const POWERUPS: Powerup[] = [
     price: 200,
     qty: 1,
     isNew: true,
-    iconBg: "linear-gradient(135deg,#220044,#b44fff22)",
+    iconBg: "linear-gradient(135deg,#100020,rgba(0,229,255,0.08))",
   },
   {
     id: "x2coins",
@@ -194,27 +201,11 @@ const POWERUPS: Powerup[] = [
     price: 300,
     qty: 0,
     isNew: false,
-    iconBg: "linear-gradient(135deg,#443300,#ffd84d22)",
+    iconBg: "linear-gradient(135deg,#1A1000,rgba(255,181,71,0.1))",
   },
 ];
 
-// ─── CSS injection ─────────────────────────────────────────────────────────────
-const injectStyles = () => {
-  if (document.getElementById("scr-hangar-styles")) return;
-  const el = document.createElement("style");
-  el.id = "scr-hangar-styles";
-  el.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap');
-    @keyframes bob        { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-    @keyframes twinkle    { from{opacity:0.15} to{opacity:0.85} }
-    @keyframes shimmer    { 0%{left:-100%} 60%,100%{left:160%} }
-    @keyframes stageGlow  { 0%,100%{opacity:0.55} 50%{opacity:0.9} }
-    @keyframes slideIn    { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
-  `;
-  document.head.appendChild(el);
-};
-
-// ─── Ship SVG (color-parametric) ──────────────────────────────────────────────
+// ─── ShipDisplay SVG ──────────────────────────────────────────────────────────
 const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
   const uid = ship.id;
   return (
@@ -224,7 +215,7 @@ const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
       viewBox="0 0 130 160"
       fill="none"
       style={{
-        filter: `drop-shadow(0 0 22px ${ship.accent}99) drop-shadow(0 0 6px ${ship.thruster}66)`,
+        filter: `drop-shadow(0 0 18px ${ship.accent}88) drop-shadow(0 0 6px ${ship.thruster}44)`,
         animation: "bob 2.6s ease-in-out infinite",
       }}
     >
@@ -251,24 +242,6 @@ const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
         stroke={ship.accent}
         strokeWidth="1.3"
       />
-      <line
-        x1="54"
-        y1="108"
-        x2="24"
-        y2="122"
-        stroke={ship.accent}
-        strokeWidth="1"
-        opacity="0.4"
-      />
-      <line
-        x1="76"
-        y1="108"
-        x2="106"
-        y2="122"
-        stroke={ship.accent}
-        strokeWidth="1"
-        opacity="0.4"
-      />
       <rect
         x="18"
         y="118"
@@ -287,13 +260,40 @@ const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
         fill={ship.thruster}
         opacity="0.9"
       />
+      <line
+        x1="54"
+        y1="108"
+        x2="24"
+        y2="122"
+        stroke={ship.accent}
+        strokeWidth="1"
+        opacity="0.4"
+      />
+      <line
+        x1="76"
+        y1="108"
+        x2="106"
+        y2="122"
+        stroke={ship.accent}
+        strokeWidth="1"
+        opacity="0.4"
+      />
       <path
         d="M65 8 C90 20 92 82 81 116 L49 116 C38 82 40 20 65 8Z"
         fill={`url(#bd${uid})`}
         stroke={ship.accent}
         strokeWidth="1.8"
       />
-      <path d="M60 68 L70 68 L68 102 L62 102Z" fill={`${ship.accent}33`} />
+      {/* Panel lines */}
+      <line
+        x1="55"
+        y1="55"
+        x2="75"
+        y2="55"
+        stroke={`${ship.accent}22`}
+        strokeWidth="0.8"
+      />
+      <path d="M60 68 L70 68 L68 102 L62 102Z" fill={`${ship.accent}22`} />
       <ellipse
         cx="65"
         cy="50"
@@ -311,7 +311,7 @@ const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
         fill="rgba(255,255,255,0.42)"
         transform="rotate(-10 59 43)"
       />
-      <ellipse cx="65" cy="12" rx="5" ry="4" fill="#ffd84d" opacity="0.9" />
+      <ellipse cx="65" cy="12" rx="5" ry="4" fill={COLOR.amber} opacity="0.9" />
       <defs>
         <radialGradient id={`eg${uid}`} cx="50%" cy="50%">
           <stop offset="0%" stopColor={ship.thruster} stopOpacity="0.9" />
@@ -328,7 +328,7 @@ const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
         </linearGradient>
         <linearGradient id={`bd${uid}`} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor={ship.color} stopOpacity="0.95" />
-          <stop offset="40%" stopColor={ship.accent} />
+          <stop offset="40%" stopColor={ship.accent} stopOpacity="0.6" />
           <stop offset="100%" stopColor={ship.color} stopOpacity="0.75" />
         </linearGradient>
         <linearGradient id={`wl${uid}`} x1="0" y1="0" x2="1" y2="0">
@@ -342,7 +342,7 @@ const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
         <radialGradient id={`cp${uid}`} cx="35%" cy="35%">
           <stop offset="0%" stopColor="rgba(220,245,255,0.96)" />
           <stop offset="50%" stopColor={ship.accent} stopOpacity="0.7" />
-          <stop offset="100%" stopColor="rgba(10,0,50,0.65)" />
+          <stop offset="100%" stopColor="rgba(10,20,50,0.65)" />
         </radialGradient>
       </defs>
     </svg>
@@ -353,22 +353,24 @@ const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
 const StatBar = ({
   label,
   value,
-  gradient,
+  color,
 }: {
   label: string;
   value: number;
-  gradient: string;
+  color: string;
 }) => (
   <div
-    style={{ display: "flex", alignItems: "center", gap: 10, margin: "5px 0" }}
+    style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}
   >
     <div
       style={{
-        fontSize: 11,
-        fontWeight: 900,
-        color: "rgba(255,255,255,0.42)",
-        width: 54,
-        letterSpacing: "0.8px",
+        fontFamily: FONT.ui,
+        fontWeight: 600,
+        fontSize: 10,
+        letterSpacing: "0.15em",
+        color: COLOR.textMuted,
+        width: 52,
+        textTransform: "uppercase" as const,
       }}
     >
       {label}
@@ -376,9 +378,9 @@ const StatBar = ({
     <div
       style={{
         flex: 1,
-        height: 10,
+        height: 6,
         background: "rgba(255,255,255,0.07)",
-        borderRadius: 6,
+        borderRadius: 2,
         overflow: "hidden",
       }}
     >
@@ -386,44 +388,24 @@ const StatBar = ({
         style={{
           width: `${value}%`,
           height: "100%",
-          borderRadius: 6,
-          background: gradient,
+          background: color,
+          borderRadius: 2,
+          boxShadow: `0 0 6px ${color}88`,
           transition: "width 0.4s ease",
         }}
       />
     </div>
-  </div>
-);
-
-// ─── Neon pill (top bar) ───────────────────────────────────────────────────────
-const Pill = ({
-  children,
-  blue,
-}: {
-  children: React.ReactNode;
-  blue?: boolean;
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      background: "rgba(7,0,28,0.75)",
-      border: blue
-        ? "1.5px solid rgba(79,195,255,0.55)"
-        : "1.5px solid rgba(180,79,255,0.55)",
-      borderRadius: 999,
-      padding: "5px 14px 5px 7px",
-      fontSize: 15,
-      fontWeight: 900,
-      color: "#fff",
-      boxShadow: blue
-        ? "0 0 18px #4fc3ff55, 0 0 40px #0077cc44"
-        : "0 0 18px #b44fff55, 0 0 40px #7b00e044",
-      backdropFilter: "blur(6px)",
-    }}
-  >
-    {children}
+    <div
+      style={{
+        fontFamily: FONT.mono,
+        fontSize: 10,
+        color: COLOR.textSecondary,
+        minWidth: 24,
+        textAlign: "right" as const,
+      }}
+    >
+      {value}
+    </div>
   </div>
 );
 
@@ -432,23 +414,59 @@ const Toast = ({ message }: { message: string }) => (
   <div
     style={{
       position: "fixed",
-      bottom: 90,
+      bottom: 80,
       left: "50%",
       transform: "translateX(-50%)",
-      background: "rgba(20,0,44,0.95)",
-      border: "1.5px solid rgba(180,79,255,0.5)",
-      borderRadius: 20,
-      padding: "8px 22px",
+      background: "rgba(17,24,39,0.96)",
+      border: `1px solid ${COLOR.borderActive}`,
+      borderRadius: RADIUS.md,
+      padding: "9px 22px",
+      fontFamily: FONT.ui,
       fontSize: 13,
-      fontWeight: 800,
+      fontWeight: 700,
+      letterSpacing: "0.08em",
       color: "#fff",
       whiteSpace: "nowrap",
       zIndex: 99,
-      boxShadow: "0 0 20px #b44fff55",
+      boxShadow: `0 0 20px rgba(0,229,255,0.2)`,
       animation: "slideIn 0.25s ease",
     }}
   >
     {message}
+  </div>
+);
+
+// ─── Upgrade / Powerup icon ───────────────────────────────────────────────────
+const CardIcon = ({
+  emoji,
+  bg,
+  border,
+  isText = false,
+}: {
+  emoji: string;
+  bg: string;
+  border: string;
+  isText?: boolean;
+}) => (
+  <div
+    style={{
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.md,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: isText ? 16 : 22,
+      fontFamily: isText ? FONT.heading : "inherit",
+      fontWeight: isText ? 700 : undefined,
+      color: isText ? COLOR.amber : "inherit",
+      background: bg,
+      border: `1px solid ${border}`,
+      marginBottom: 4,
+      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06)`,
+    }}
+  >
+    {emoji}
   </div>
 );
 
@@ -460,137 +478,101 @@ export default function Hangar({
 }: HangarProps) {
   const [tab, setTab] = useState<"ships" | "store">("ships");
   const [ships, setShips] = useState<Ship[]>(() => {
-    const saved = localStorage.getItem("ships");
-
-    return saved ? JSON.parse(saved) : SHIPS;
+    const s = localStorage.getItem("ships");
+    return s ? JSON.parse(s) : SHIPS;
   });
   const [upgrades, setUpgrades] = useState<Upgrade[]>(() => {
-    const saved = localStorage.getItem("upgrades");
-
-    return saved ? JSON.parse(saved) : UPGRADES;
+    const s = localStorage.getItem("upgrades");
+    return s ? JSON.parse(s) : UPGRADES;
   });
   const [powerups, setPowerups] = useState<Powerup[]>(POWERUPS);
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const [activeIdx, setActiveIdx] = useState(() => {
-    return Number(localStorage.getItem("activeShipIdx") || 0);
-  });
-  const [coins, setCoins] = useState(() => {
-    return Number(localStorage.getItem("totalCoins") || initialCoins);
-  });
+  const [activeIdx, setActiveIdx] = useState(() =>
+    Number(localStorage.getItem("activeShipIdx") || 0),
+  );
+  const [coins, setCoins] = useState(() =>
+    Number(localStorage.getItem("totalCoins") || initialCoins),
+  );
   const [toast, setToast] = useState("");
 
   useEffect(() => {
-    injectStyles();
+    injectGlobalStyles();
   }, []);
   useEffect(() => {
     localStorage.setItem("ships", JSON.stringify(ships));
   }, [ships]);
-
   useEffect(() => {
     localStorage.setItem("upgrades", JSON.stringify(upgrades));
   }, [upgrades]);
-
   useEffect(() => {
     localStorage.setItem("activeShipIdx", activeIdx.toString());
   }, [activeIdx]);
   useEffect(() => {
     localStorage.setItem("totalCoins", coins.toString());
   }, [coins]);
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(""), 2200);
   };
-
-  const navigate = (dir: 1 | -1) => {
+  const navigate = (dir: 1 | -1) =>
     setSelectedIdx((i) => (i + dir + ships.length) % ships.length);
-  };
+
   const handleBuy = () => {
     const s = ships[selectedIdx];
-
     if (s.owned || coins < s.price) return;
-
-    const updatedShips = ships.map((sh, i) =>
+    const updated = ships.map((sh, i) =>
       i === selectedIdx ? { ...sh, owned: true } : sh,
     );
-
     setCoins((c) => c - s.price);
-
-    setShips(updatedShips);
-
-    localStorage.setItem("ships", JSON.stringify(updatedShips));
-
-    showToast(`${s.name} unlocked! ✨`);
+    setShips(updated);
+    localStorage.setItem("ships", JSON.stringify(updated));
+    showToast(`${s.name} unlocked!`);
   };
 
   const handleSelect = () => {
     if (!ships[selectedIdx].owned) return;
-
     setActiveIdx(selectedIdx);
-
     localStorage.setItem("activeShipIdx", selectedIdx.toString());
-
     localStorage.setItem("selectedShip", ships[selectedIdx].id);
-
     onShipSelect(ships[selectedIdx].id);
-
-    showToast("Ship selected! 🚀");
+    showToast("Ship selected!");
   };
 
   const handleUpgrade = (u: Upgrade) => {
     const maxLv = u.levels.length - 1;
-
     if (u.cur >= maxLv) {
-      showToast("Already maxed! ✓");
+      showToast("Already maxed!");
       return;
     }
-
     const cost = u.levels[u.cur + 1];
-
     if (coins < cost) {
-      showToast("Not enough coins! 🪙");
+      showToast("Not enough credits!");
       return;
     }
-
-    const updatedUpgrades = upgrades.map((x) =>
+    const updated = upgrades.map((x) =>
       x.id === u.id ? { ...x, cur: x.cur + 1 } : x,
     );
-
     setCoins((c) => c - cost);
-
-    setUpgrades(updatedUpgrades);
-
-    localStorage.setItem("upgrades", JSON.stringify(updatedUpgrades));
-
-    showToast(`${u.name} → Lv${u.cur + 1}! ⬆️`);
+    setUpgrades(updated);
+    localStorage.setItem("upgrades", JSON.stringify(updated));
+    showToast(`${u.name} → Lv${u.cur + 1}`);
   };
+
   const handleBuyPowerup = (p: Powerup) => {
     if (coins < p.price) {
-      showToast("Not enough coins! 🪙");
+      showToast("Not enough credits!");
       return;
     }
     setCoins((c) => c - p.price);
     setPowerups((prev) =>
       prev.map((x) => (x.id === p.id ? { ...x, qty: x.qty + 1 } : x)),
     );
-    showToast(`${p.name} ×1 added! ✨`);
+    showToast(`${p.name} ×1 added`);
   };
 
   const selectedShip = ships[selectedIdx];
   const isActive = selectedIdx === activeIdx;
-
-  const cardStyle: CSSProperties = {
-    background: "rgba(255,255,255,0.03)",
-    border: "1.5px solid rgba(180,79,255,0.2)",
-    borderRadius: 18,
-    padding: "16px 12px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 5,
-    cursor: "pointer",
-    position: "relative",
-    transition: "border-color 0.2s, background 0.2s",
-  };
 
   return (
     <div
@@ -598,15 +580,13 @@ export default function Hangar({
         position: "relative",
         width: "100%",
         height: "100%",
-        background:
-          "radial-gradient(ellipse at 50% 30%, #1a0044 0%, #07001c 65%)",
-        fontFamily: "'Nunito', sans-serif",
-        overflow: "hidden",
+        background: `radial-gradient(ellipse at 50% 25%, #0D1830 0%, ${COLOR.bgDeep} 65%)`,
         display: "flex",
         flexDirection: "column",
+        overflow: "hidden",
       }}
     >
-      {/* Stars bg */}
+      {/* Starfield */}
       <div
         style={{
           position: "absolute",
@@ -626,72 +606,66 @@ export default function Hangar({
               top: `${(Math.cos(i * 97.3) * 0.5 + 0.5) * 100}%`,
               borderRadius: "50%",
               background:
-                i % 7 === 0 ? "#b44fff" : i % 11 === 0 ? "#4fc3ff" : "#fff",
-              opacity: 0.15 + (i % 6) * 0.1,
+                i % 7 === 0
+                  ? COLOR.cyanSoft
+                  : i % 11 === 0
+                    ? COLOR.cyan
+                    : "#fff",
+              opacity: 0.1 + (i % 6) * 0.08,
               animation: `twinkle ${2 + (i % 4)}s ease-in-out ${(i % 10) * 0.3}s infinite alternate`,
             }}
           />
         ))}
       </div>
 
-      {/* Top bar */}
+      {/* ── TOP BAR ── */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "52px 20px 12px",
+          padding: "52px 18px 12px",
           position: "relative",
           zIndex: 10,
+          borderBottom: `1px solid ${COLOR.borderSubtle}`,
         }}
       >
-        <Pill blue>
-          <div
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: "50%",
-              background: "radial-gradient(circle at 35% 30%,#ffe57a,#ff9500)",
-              border: "2px solid #ffd84d",
-              flexShrink: 0,
-            }}
-          />
-          <span>{coins.toLocaleString()}</span>
-        </Pill>
+        <BracketFrame
+          style={{
+            padding: "5px 12px 5px 8px",
+            background: "rgba(17,24,39,0.8)",
+            border: `1px solid ${COLOR.borderPanel}`,
+            borderRadius: RADIUS.md,
+          }}
+        >
+          <CoinDisplay value={coins} size="sm" />
+        </BracketFrame>
+
         <div
           style={{
-            fontFamily: "'Fredoka One',cursive",
-            fontSize: 20,
-            color: "#b44fff",
-            letterSpacing: 3,
-            textShadow: "0 0 18px #b44fff, 0 0 40px #7b00e055",
+            fontFamily: FONT.heading,
+            fontWeight: 700,
+            fontSize: 16,
+            letterSpacing: "0.2em",
+            color: "#fff",
           }}
         >
           HANGAR
         </div>
-        <button
+
+        <SecondaryButton
           onClick={onBack}
-          style={{
-            fontFamily: "'Fredoka One',cursive",
-            fontSize: 14,
-            color: "rgba(255,255,255,0.5)",
-            background: "rgba(7,0,28,0.7)",
-            border: "1.5px solid rgba(180,79,255,0.3)",
-            borderRadius: 999,
-            padding: "6px 16px",
-            cursor: "pointer",
-            boxShadow: "0 0 12px #b44fff33",
-          }}
+          style={{ fontSize: 11, padding: "6px 14px" }}
         >
-          ← Back
-        </button>
+          ← BACK
+        </SecondaryButton>
       </div>
 
-      {/* Tabs */}
+      {/* ── TABS ── */}
       <div
         style={{
           display: "flex",
-          borderBottom: "2px solid rgba(180,79,255,0.2)",
+          borderBottom: `1px solid ${COLOR.borderSubtle}`,
           position: "relative",
           zIndex: 10,
         }}
@@ -702,19 +676,22 @@ export default function Hangar({
             onClick={() => setTab(t)}
             style={{
               flex: 1,
-              padding: "13px 0",
-              fontFamily: "'Fredoka One',cursive",
-              fontSize: 16,
-              color: tab === t ? "#b44fff" : "rgba(255,255,255,0.32)",
-              background: tab === t ? "rgba(180,79,255,0.08)" : "transparent",
+              padding: "11px 0",
+              fontFamily: FONT.heading,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: tab === t ? COLOR.cyan : COLOR.textMuted,
+              background: tab === t ? "rgba(0,229,255,0.04)" : "transparent",
               border: "none",
               borderBottom:
-                tab === t ? "3px solid #b44fff" : "3px solid transparent",
+                tab === t ? `2px solid ${COLOR.cyan}` : "2px solid transparent",
               cursor: "pointer",
               transition: "all 0.2s",
             }}
           >
-            {t === "ships" ? "🚀 Ships" : "🛒 Upgrades"}
+            {t === "ships" ? "◈ SHIPS" : "⬡ UPGRADES"}
           </button>
         ))}
       </div>
@@ -732,92 +709,104 @@ export default function Hangar({
           {/* Stage */}
           <div
             style={{
-              height: 250,
+              height: 230,
               position: "relative",
-              background:
-                "radial-gradient(ellipse at 50% 60%, rgba(100,40,180,0.22), transparent 70%)",
+              background: `radial-gradient(ellipse at 50% 65%, ${selectedShip.accent}18, transparent 65%)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
             }}
           >
-            {/* Stage glow */}
+            {/* Stage floor glow */}
             <div
               style={{
                 position: "absolute",
-                bottom: 20,
+                bottom: 16,
                 left: "50%",
                 transform: "translateX(-50%)",
-                width: 180,
-                height: 28,
-                background: `radial-gradient(ellipse, ${selectedShip.accent}66, transparent 70%)`,
+                width: 160,
+                height: 20,
+                background: `radial-gradient(ellipse, ${selectedShip.accent}44, transparent 70%)`,
                 filter: "blur(8px)",
                 animation: "stageGlow 2s ease-in-out infinite",
               }}
             />
-            {/* Nav buttons */}
+
+            {/* Nav left */}
             <button
               onClick={() => navigate(-1)}
               style={{
                 position: "absolute",
-                left: 14,
+                left: 12,
                 top: "50%",
                 transform: "translateY(-50%)",
-                width: 38,
-                height: 38,
-                borderRadius: "50%",
-                background: "rgba(7,0,28,0.72)",
-                border: "1.5px solid rgba(180,79,255,0.5)",
-                color: "#b44fff",
+                width: 34,
+                height: 34,
+                borderRadius: RADIUS.md,
+                background: "rgba(17,24,39,0.8)",
+                border: `1px solid ${COLOR.borderPanel}`,
+                color: COLOR.cyan,
                 fontSize: 20,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
                 zIndex: 5,
-                fontFamily: "'Fredoka One',cursive",
-                boxShadow: "0 0 14px #b44fff44",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 0 rgba(0,0,0,0.4)",
               }}
             >
               ‹
             </button>
+
+            {/* Nav right */}
             <button
               onClick={() => navigate(1)}
               style={{
                 position: "absolute",
-                right: 14,
+                right: 12,
                 top: "50%",
                 transform: "translateY(-50%)",
-                width: 38,
-                height: 38,
-                borderRadius: "50%",
-                background: "rgba(7,0,28,0.72)",
-                border: "1.5px solid rgba(180,79,255,0.5)",
-                color: "#b44fff",
+                width: 34,
+                height: 34,
+                borderRadius: RADIUS.md,
+                background: "rgba(17,24,39,0.8)",
+                border: `1px solid ${COLOR.borderPanel}`,
+                color: COLOR.cyan,
                 fontSize: 20,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
                 zIndex: 5,
-                fontFamily: "'Fredoka One',cursive",
-                boxShadow: "0 0 14px #b44fff44",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 0 rgba(0,0,0,0.4)",
               }}
             >
               ›
             </button>
-            {/* Ship */}
-            <ShipDisplay ship={selectedShip} size={110} />
+
+            {/* Corner bracket stage frame */}
+            <BracketFrame
+              style={{
+                padding: "14px 20px",
+                background: "rgba(17,24,39,0.35)",
+                border: `1px solid rgba(0,229,255,0.1)`,
+                borderRadius: RADIUS.md,
+              }}
+            >
+              <ShipDisplay ship={selectedShip} size={100} />
+            </BracketFrame>
           </div>
 
-          {/* Dots */}
+          {/* Dot indicators */}
           <div
             style={{
               display: "flex",
               justifyContent: "center",
-              gap: 7,
-              margin: "4px 0 0",
+              gap: 6,
+              marginTop: 8,
             }}
           >
             {ships.map((_, i) => (
@@ -825,138 +814,106 @@ export default function Hangar({
                 key={i}
                 onClick={() => setSelectedIdx(i)}
                 style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  cursor: "pointer",
+                  width: i === selectedIdx ? 18 : 6,
+                  height: 6,
+                  borderRadius: i === selectedIdx ? 3 : "50%",
                   background:
-                    i === selectedIdx ? "#b44fff" : "rgba(255,255,255,0.15)",
-                  boxShadow: i === selectedIdx ? "0 0 8px #b44fff" : "none",
-                  transition: "all 0.2s",
+                    i === selectedIdx ? COLOR.cyan : "rgba(255,255,255,0.15)",
+                  boxShadow:
+                    i === selectedIdx ? `0 0 6px ${COLOR.cyan}` : "none",
+                  cursor: "pointer",
+                  transition: "all 0.25s ease",
                 }}
               />
             ))}
           </div>
 
           {/* Ship info */}
-          <div style={{ padding: "6px 24px 0" }}>
-            <div
-              style={{
-                fontFamily: "'Fredoka One',cursive",
-                fontSize: 28,
-                color: "#fff",
-                textAlign: "center",
-                marginBottom: 2,
-                textShadow: `0 2px 12px ${selectedShip.accent}88`,
-              }}
-            >
-              {selectedShip.name}
-            </div>
+          <div style={{ padding: "10px 22px 0" }}>
+            {/* Name + stars */}
             <div style={{ textAlign: "center", marginBottom: 10 }}>
-              {[1, 2, 3].map((i) => (
-                <span
-                  key={i}
-                  style={{
-                    fontSize: 18,
-                    color:
-                      i <= selectedShip.stars
-                        ? "#ffd84d"
-                        : "rgba(255,255,255,0.13)",
-                    textShadow:
-                      i <= selectedShip.stars ? "0 0 8px #ffd84d" : "none",
-                  }}
-                >
-                  ★
-                </span>
-              ))}
+              <div
+                style={{
+                  fontFamily: FONT.heading,
+                  fontWeight: 700,
+                  fontSize: 22,
+                  letterSpacing: "0.14em",
+                  color: "#fff",
+                  textShadow: `0 0 16px ${selectedShip.accent}66`,
+                  marginBottom: 4,
+                }}
+              >
+                {selectedShip.name}
+              </div>
+              <div
+                style={{ display: "flex", justifyContent: "center", gap: 4 }}
+              >
+                {[1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    style={{
+                      fontSize: 14,
+                      color:
+                        i <= selectedShip.stars
+                          ? COLOR.amber
+                          : "rgba(255,255,255,0.1)",
+                      textShadow:
+                        i <= selectedShip.stars
+                          ? `0 0 6px ${COLOR.amber}`
+                          : "none",
+                    }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
             </div>
+
             <StatBar
               label="SPEED"
               value={selectedShip.spd}
-              gradient="linear-gradient(90deg,#4488ff,#88ccff)"
+              color={COLOR.cyanSoft}
             />
             <StatBar
               label="SHIELD"
               value={selectedShip.shd}
-              gradient="linear-gradient(90deg,#44ffaa,#88ffcc)"
+              color={COLOR.green}
             />
             <StatBar
               label="CARGO"
               value={selectedShip.cap}
-              gradient="linear-gradient(90deg,#ffaa00,#ffdd44)"
+              color={COLOR.amber}
             />
           </div>
 
-          {/* Buttons */}
-          <div style={{ display: "flex", gap: 10, padding: "14px 20px 0" }}>
+          {/* Action buttons */}
+          <div style={{ display: "flex", gap: 8, padding: "12px 18px 16px" }}>
             {selectedShip.owned ? (
-              <button
+              <PrimaryButton
                 onClick={handleSelect}
-                style={{
-                  flex: 1,
-                  fontFamily: "'Fredoka One',cursive",
-                  fontSize: 19,
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 999,
-                  padding: "13px 0",
-                  cursor: "pointer",
-                  background: isActive
-                    ? "linear-gradient(180deg,#44cc88,#228855)"
-                    : "linear-gradient(180deg,#c966ff,#6600cc)",
-                  boxShadow: isActive
-                    ? "0 5px 0 #115533"
-                    : "0 5px 0 #3d007a, 0 0 18px #b44fff55",
-                  transition: "all 0.1s",
-                }}
+                amber={isActive}
+                style={{ flex: 1, padding: "13px 0", fontSize: 14 }}
               >
-                {isActive ? "✓ ACTIVE" : "✓ SELECT"}
-              </button>
+                {isActive ? "✓ ACTIVE SHIP" : "✓ SELECT SHIP"}
+              </PrimaryButton>
             ) : (
               <>
-                <button
-                  style={{
-                    flex: 0.55,
-                    fontFamily: "'Fredoka One',cursive",
-                    fontSize: 16,
-                    color: "rgba(255,255,255,0.5)",
-                    border: "1.5px solid rgba(180,79,255,0.3)",
-                    borderRadius: 999,
-                    padding: "13px 0",
-                    cursor: "default",
-                    background: "rgba(7,0,28,0.6)",
-                  }}
+                <SecondaryButton
+                  disabled
+                  style={{ flex: 0.6, padding: "13px 0", fontSize: 12 }}
                 >
                   PREVIEW
-                </button>
-                <button
+                </SecondaryButton>
+                <PrimaryButton
                   onClick={handleBuy}
-                  style={{
-                    flex: 1,
-                    fontFamily: "'Fredoka One',cursive",
-                    fontSize: 18,
-                    color:
-                      coins >= selectedShip.price
-                        ? "#3a1a00"
-                        : "rgba(255,255,255,0.35)",
-                    border: "none",
-                    borderRadius: 999,
-                    padding: "13px 0",
-                    cursor: coins >= selectedShip.price ? "pointer" : "default",
-                    background:
-                      coins >= selectedShip.price
-                        ? "linear-gradient(180deg,#ffd84d,#ff8c00)"
-                        : "linear-gradient(180deg,#555,#333)",
-                    boxShadow:
-                      coins >= selectedShip.price
-                        ? "0 5px 0 #a84f00, 0 0 14px #ffd84d55"
-                        : "0 5px 0 #222",
-                  }}
+                  amber={coins >= selectedShip.price}
+                  disabled={coins < selectedShip.price}
+                  style={{ flex: 1, padding: "13px 0", fontSize: 13 }}
                 >
                   {coins >= selectedShip.price
-                    ? `🪙 ${selectedShip.price.toLocaleString()}`
+                    ? `⬡ ${selectedShip.price.toLocaleString()}`
                     : `🔒 ${selectedShip.price.toLocaleString()}`}
-                </button>
+                </PrimaryButton>
               </>
             )}
           </div>
@@ -969,30 +926,18 @@ export default function Hangar({
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: "14px 18px 30px",
+            padding: "16px 16px 32px",
             scrollbarWidth: "none",
           }}
         >
           {/* Upgrades */}
-          <div
-            style={{
-              fontFamily: "'Fredoka One',cursive",
-              fontSize: 16,
-              color: "#b44fff",
-              letterSpacing: 1.5,
-              marginBottom: 10,
-              paddingLeft: 2,
-              textShadow: "0 0 14px #b44fff",
-            }}
-          >
-            ⚙️ SHIP UPGRADES
-          </div>
+          <SectionHeader label="SHIP UPGRADES" />
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
-              gap: 10,
-              marginBottom: 22,
+              gap: 8,
+              marginBottom: 20,
             }}
           >
             {upgrades.map((u) => {
@@ -1000,76 +945,50 @@ export default function Hangar({
               const isMax = u.cur >= maxLv;
               const nextCost = isMax ? 0 : u.levels[u.cur + 1];
               return (
-                <div
+                <UpgradeCard
                   key={u.id}
                   onClick={() => handleUpgrade(u)}
-                  style={{
-                    ...cardStyle,
-                    borderColor: isMax
-                      ? "rgba(0,255,170,0.35)"
-                      : "rgba(180,79,255,0.2)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor =
-                      isMax ? "rgba(0,255,170,0.6)" : "rgba(180,79,255,0.5)";
-                    (e.currentTarget as HTMLDivElement).style.background =
-                      "rgba(180,79,255,0.06)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor =
-                      isMax ? "rgba(0,255,170,0.35)" : "rgba(180,79,255,0.2)";
-                    (e.currentTarget as HTMLDivElement).style.background =
-                      "rgba(255,255,255,0.03)";
-                  }}
+                  isMax={isMax}
                 >
+                  <CardIcon
+                    emoji={u.emoji}
+                    bg={u.iconBg}
+                    border={u.iconBorder}
+                  />
                   <div
                     style={{
-                      width: 54,
-                      height: 54,
-                      borderRadius: 14,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 26,
-                      background: u.iconBg,
-                      border: `1.5px solid ${u.iconBorder}`,
-                      marginBottom: 2,
-                    }}
-                  >
-                    {u.emoji}
-                  </div>
-                  <div
-                    style={{
+                      fontFamily: FONT.ui,
+                      fontWeight: 700,
                       fontSize: 13,
-                      fontWeight: 900,
                       color: "#fff",
                       textAlign: "center",
-                      lineHeight: 1.2,
                     }}
                   >
                     {u.name}
                   </div>
                   <div
                     style={{
+                      fontFamily: FONT.ui,
                       fontSize: 10,
-                      fontWeight: 800,
-                      color: "rgba(255,255,255,0.38)",
+                      color: COLOR.textMuted,
                       textAlign: "center",
                     }}
                   >
                     {u.desc}
                   </div>
-                  <div style={{ display: "flex", gap: 3, margin: "2px 0" }}>
+                  {/* Level pips */}
+                  <div style={{ display: "flex", gap: 3, margin: "3px 0" }}>
                     {Array.from({ length: maxLv }, (_, i) => (
                       <div
                         key={i}
                         style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: "50%",
+                          width: 9,
+                          height: 9,
+                          borderRadius: 2,
                           background:
-                            i < u.cur ? "#ffd84d" : "rgba(255,255,255,0.08)",
-                          boxShadow: i < u.cur ? "0 0 6px #ffd84d" : "none",
+                            i < u.cur ? COLOR.amber : "rgba(255,255,255,0.08)",
+                          boxShadow:
+                            i < u.cur ? `0 0 5px ${COLOR.amber}88` : "none",
                         }}
                       />
                     ))}
@@ -1077,131 +996,55 @@ export default function Hangar({
                   {isMax ? (
                     <div
                       style={{
-                        fontFamily: "'Fredoka One',cursive",
-                        fontSize: 12,
-                        color: "#00ffaa",
-                        letterSpacing: 1,
+                        fontFamily: FONT.mono,
+                        fontSize: 11,
+                        color: COLOR.green,
+                        letterSpacing: "0.1em",
                       }}
                     >
                       MAX ✓
                     </div>
                   ) : (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        fontSize: 13,
-                        fontWeight: 900,
-                        color: "#ffd84d",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: "50%",
-                          background:
-                            "radial-gradient(circle at 35% 30%,#ffe57a,#ff9500)",
-                          border: "1.5px solid #ffd84d",
-                          flexShrink: 0,
-                        }}
-                      />
-                      {nextCost}
-                    </div>
+                    <CoinDisplay value={nextCost} size="sm" />
                   )}
-                </div>
+                </UpgradeCard>
               );
             })}
           </div>
 
           {/* Power-ups */}
+          <SectionHeader label="POWER-UPS" />
           <div
-            style={{
-              fontFamily: "'Fredoka One',cursive",
-              fontSize: 16,
-              color: "#b44fff",
-              letterSpacing: 1.5,
-              marginBottom: 10,
-              paddingLeft: 2,
-              textShadow: "0 0 14px #b44fff",
-            }}
-          >
-            ✨ POWER-UPS
-          </div>
-          <div
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
           >
             {powerups.map((p) => (
-              <div
+              <UpgradeCard
                 key={p.id}
                 onClick={() => handleBuyPowerup(p)}
-                style={cardStyle}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor =
-                    "rgba(180,79,255,0.5)";
-                  (e.currentTarget as HTMLDivElement).style.background =
-                    "rgba(180,79,255,0.06)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor =
-                    "rgba(180,79,255,0.2)";
-                  (e.currentTarget as HTMLDivElement).style.background =
-                    "rgba(255,255,255,0.03)";
-                }}
+                badge={p.isNew ? "NEW" : undefined}
               >
-                {p.isNew && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: -7,
-                      right: -7,
-                      background: "linear-gradient(135deg,#ff4477,#cc1144)",
-                      color: "#fff",
-                      fontSize: 10,
-                      fontWeight: 900,
-                      borderRadius: 10,
-                      padding: "2px 7px",
-                      letterSpacing: "0.5px",
-                    }}
-                  >
-                    NEW
-                  </div>
-                )}
+                <CardIcon
+                  emoji={p.emoji}
+                  bg={p.iconBg}
+                  border="rgba(0,229,255,0.2)"
+                  isText={p.emoji === "×2"}
+                />
                 <div
                   style={{
-                    width: 54,
-                    height: 54,
-                    borderRadius: 14,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: p.emoji === "×2" ? 20 : 26,
-                    fontFamily: "'Fredoka One',cursive",
-                    color: "#ffd84d",
-                    background: p.iconBg,
-                    border: "1.5px solid rgba(79,195,255,0.35)",
-                    marginBottom: 2,
-                  }}
-                >
-                  {p.emoji}
-                </div>
-                <div
-                  style={{
+                    fontFamily: FONT.ui,
+                    fontWeight: 700,
                     fontSize: 13,
-                    fontWeight: 900,
                     color: "#fff",
                     textAlign: "center",
-                    lineHeight: 1.2,
                   }}
                 >
                   {p.name}
                 </div>
                 <div
                   style={{
+                    fontFamily: FONT.ui,
                     fontSize: 10,
-                    fontWeight: 800,
-                    color: "rgba(255,255,255,0.38)",
+                    color: COLOR.textMuted,
                     textAlign: "center",
                   }}
                 >
@@ -1209,42 +1052,108 @@ export default function Hangar({
                 </div>
                 {p.qty > 0 && (
                   <div
-                    style={{ fontSize: 11, fontWeight: 900, color: "#00ffaa" }}
+                    style={{
+                      fontFamily: FONT.mono,
+                      fontSize: 10,
+                      color: COLOR.green,
+                    }}
                   >
-                    Owned: {p.qty}
+                    OWNED: {p.qty}
                   </div>
                 )}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    fontSize: 13,
-                    fontWeight: 900,
-                    color: "#ffd84d",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: "50%",
-                      background:
-                        "radial-gradient(circle at 35% 30%,#ffe57a,#ff9500)",
-                      border: "1.5px solid #ffd84d",
-                      flexShrink: 0,
-                    }}
-                  />
-                  {p.price}
-                </div>
-              </div>
+                <CoinDisplay value={p.price} size="sm" />
+              </UpgradeCard>
             ))}
           </div>
         </div>
       )}
 
-      {/* Toast */}
       {toast && <Toast message={toast} />}
+    </div>
+  );
+}
+
+// ─── Section header ───────────────────────────────────────────────────────────
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        marginBottom: 10,
+      }}
+    >
+      <div style={{ flex: 1, height: 1, background: "rgba(0,229,255,0.12)" }} />
+      <span
+        style={{
+          fontFamily: FONT.heading,
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: "0.2em",
+          color: COLOR.textMuted,
+        }}
+      >
+        {label}
+      </span>
+      <div style={{ flex: 1, height: 1, background: "rgba(0,229,255,0.12)" }} />
+    </div>
+  );
+}
+
+// ─── Upgrade/Powerup card ─────────────────────────────────────────────────────
+function UpgradeCard({
+  children,
+  onClick,
+  isMax,
+  badge,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  isMax?: boolean;
+  badge?: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: hovered ? "rgba(0,229,255,0.05)" : "rgba(255,255,255,0.02)",
+        border: `1px solid ${hovered ? COLOR.borderPanel : COLOR.borderSubtle}`,
+        borderRadius: RADIUS.md,
+        padding: "14px 10px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 4,
+        cursor: "pointer",
+        position: "relative",
+        transition: "border-color 0.2s, background 0.2s",
+        boxShadow: isMax ? `inset 0 0 12px ${COLOR.greenDim}` : "none",
+      }}
+    >
+      {badge && (
+        <div
+          style={{
+            position: "absolute",
+            top: -6,
+            right: -6,
+            background: COLOR.red,
+            color: "#fff",
+            fontFamily: FONT.ui,
+            fontWeight: 700,
+            fontSize: 9,
+            letterSpacing: "0.1em",
+            borderRadius: RADIUS.sm,
+            padding: "2px 6px",
+          }}
+        >
+          {badge}
+        </div>
+      )}
+      {children}
     </div>
   );
 }
