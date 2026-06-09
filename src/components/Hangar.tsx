@@ -9,7 +9,7 @@ import {
   CoinDisplay,
   injectGlobalStyles,
 } from "./design-system";
-
+import ShipSVG from "./ShipSVG";
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface HangarProps {
   coins: number;
@@ -53,112 +53,82 @@ interface Powerup {
 // ─── Data (unchanged) ─────────────────────────────────────────────────────────
 const SHIPS: Ship[] = [
   {
-    id: "viper",
-    name: "VIPER MK-I",
+    id: "phantom",
+    name: "PHANTOM WEDGE",
     stars: 1,
     spd: 55,
-    shd: 30,
-    cap: 45,
+    shd: 45,
+    cap: 50,
     price: 0,
     owned: true,
     color: "#0D2040",
-    accent: COLOR.cyan,
-    thruster: COLOR.cyan,
+    accent: "#00E5FF",
+    thruster: "#00E5FF",
   },
   {
-    id: "falcon",
-    name: "FALCON X",
+    id: "void",
+    name: "VOID CRUISER",
     stars: 2,
-    spd: 72,
-    shd: 55,
-    cap: 60,
+    spd: 70,
+    shd: 60,
+    cap: 65,
     price: 800,
     owned: false,
-    color: "#0D2040",
-    accent: COLOR.cyanSoft,
-    thruster: COLOR.cyanSoft,
+    color: "#201000",
+    accent: "#FF8C00",
+    thruster: "#FF8C00",
   },
   {
-    id: "storm",
-    name: "STORM RAY",
+    id: "specter",
+    name: "SPECTER",
     stars: 2,
-    spd: 60,
-    shd: 80,
-    cap: 50,
+    spd: 80,
+    shd: 55,
+    cap: 55,
     price: 1200,
     owned: false,
-    color: "#201020",
-    accent: "#FF6688",
-    thruster: "#FF4466",
+    color: "#001A10",
+    accent: "#00FFAA",
+    thruster: "#00FFAA",
   },
   {
-    id: "nebula",
-    name: "NEBULA ACE",
+    id: "mantis",
+    name: "MANTIS",
     stars: 3,
     spd: 88,
-    shd: 70,
-    cap: 85,
+    shd: 75,
+    cap: 80,
     price: 2500,
     owned: false,
-    color: "#1A1000",
-    accent: COLOR.amber,
-    thruster: "#FFD040",
+    color: "#001808",
+    accent: "#00FF78",
+    thruster: "#00FF78",
   },
   {
-    id: "phantom",
-    name: "PHANTOM-9",
+    id: "wraith",
+    name: "WRAITH",
     stars: 3,
-    spd: 95,
-    shd: 90,
-    cap: 90,
+    spd: 96,
+    shd: 70,
+    cap: 85,
     price: 4000,
     owned: false,
-    color: "#001A10",
-    accent: COLOR.green,
-    thruster: "#00FFCC",
-  },
-];
-
-const UPGRADES: Upgrade[] = [
-  {
-    id: "engine",
-    name: "Engine",
-    desc: "Boost max speed",
-    emoji: "🚀",
-    levels: [0, 200, 400, 800],
-    cur: 1,
-    iconBg: "linear-gradient(135deg,#0A1A3A,#0D2A5A)",
-    iconBorder: "rgba(0,229,255,0.3)",
+    color: "#180030",
+    accent: "#CC64FF",
+    thruster: "#CC64FF",
   },
   {
-    id: "shield",
-    name: "Shield",
-    desc: "Reduce crash damage",
-    emoji: "🛡️",
-    levels: [0, 250, 500, 1000],
-    cur: 3,
-    iconBg: "linear-gradient(135deg,#001A12,#003320)",
-    iconBorder: "rgba(0,229,160,0.3)",
-  },
-  {
-    id: "fuel",
-    name: "Fuel Tank",
-    desc: "Larger fuel capacity",
-    emoji: "⚡",
-    levels: [0, 180, 360, 720],
-    cur: 0,
-    iconBg: "linear-gradient(135deg,#1A1000,#2A1800)",
-    iconBorder: "rgba(255,181,71,0.3)",
-  },
-  {
-    id: "magnet",
-    name: "Magnet",
-    desc: "Auto-collect cargo",
-    emoji: "🧲",
-    levels: [0, 300, 600],
-    cur: 2,
-    iconBg: "linear-gradient(135deg,#1A0020,#2A0040)",
-    iconBorder: "rgba(0,229,255,0.2)",
+    id: "nova",
+    name: "NOVA STRIKER",
+    stars: 4,
+    spd: 100,
+    shd: 90,
+    cap: 100,
+    price: 6500,
+    owned: false,
+    color: "#220020",
+    accent: "#FF44CC",
+    thruster: "#FF44CC",
   },
 ];
 
@@ -204,150 +174,6 @@ const POWERUPS: Powerup[] = [
     iconBg: "linear-gradient(135deg,#1A1000,rgba(255,181,71,0.1))",
   },
 ];
-
-// ─── ShipDisplay SVG ──────────────────────────────────────────────────────────
-const ShipDisplay = ({ ship, size = 100 }: { ship: Ship; size?: number }) => {
-  const uid = ship.id;
-  return (
-    <svg
-      width={size}
-      height={size * 1.25}
-      viewBox="0 0 130 160"
-      fill="none"
-      style={{
-        filter: `drop-shadow(0 0 18px ${ship.accent}88) drop-shadow(0 0 6px ${ship.thruster}44)`,
-        animation: "bob 2.6s ease-in-out infinite",
-      }}
-    >
-      <ellipse
-        cx="65"
-        cy="132"
-        rx="40"
-        ry="20"
-        fill={`url(#eg${uid})`}
-        opacity="0.75"
-      />
-      <path d="M51 118 Q65 158 79 118" fill={`url(#fl${uid})`} />
-      <path d="M42 106 Q37 122 44 118" fill={`url(#sf${uid})`} />
-      <path d="M88 106 Q93 122 86 118" fill={`url(#sf${uid})`} />
-      <path
-        d="M62 100 L16 120 L21 132 L60 112 Z"
-        fill={`url(#wl${uid})`}
-        stroke={ship.accent}
-        strokeWidth="1.3"
-      />
-      <path
-        d="M68 100 L114 120 L109 132 L70 112 Z"
-        fill={`url(#wr${uid})`}
-        stroke={ship.accent}
-        strokeWidth="1.3"
-      />
-      <rect
-        x="18"
-        y="118"
-        width="16"
-        height="5"
-        rx="2.5"
-        fill={ship.thruster}
-        opacity="0.9"
-      />
-      <rect
-        x="96"
-        y="118"
-        width="16"
-        height="5"
-        rx="2.5"
-        fill={ship.thruster}
-        opacity="0.9"
-      />
-      <line
-        x1="54"
-        y1="108"
-        x2="24"
-        y2="122"
-        stroke={ship.accent}
-        strokeWidth="1"
-        opacity="0.4"
-      />
-      <line
-        x1="76"
-        y1="108"
-        x2="106"
-        y2="122"
-        stroke={ship.accent}
-        strokeWidth="1"
-        opacity="0.4"
-      />
-      <path
-        d="M65 8 C90 20 92 82 81 116 L49 116 C38 82 40 20 65 8Z"
-        fill={`url(#bd${uid})`}
-        stroke={ship.accent}
-        strokeWidth="1.8"
-      />
-      {/* Panel lines */}
-      <line
-        x1="55"
-        y1="55"
-        x2="75"
-        y2="55"
-        stroke={`${ship.accent}22`}
-        strokeWidth="0.8"
-      />
-      <path d="M60 68 L70 68 L68 102 L62 102Z" fill={`${ship.accent}22`} />
-      <ellipse
-        cx="65"
-        cy="50"
-        rx="14"
-        ry="21"
-        fill={`url(#cp${uid})`}
-        stroke="rgba(255,255,255,0.5)"
-        strokeWidth="1.5"
-      />
-      <ellipse
-        cx="59"
-        cy="43"
-        rx="5"
-        ry="7.5"
-        fill="rgba(255,255,255,0.42)"
-        transform="rotate(-10 59 43)"
-      />
-      <ellipse cx="65" cy="12" rx="5" ry="4" fill={COLOR.amber} opacity="0.9" />
-      <defs>
-        <radialGradient id={`eg${uid}`} cx="50%" cy="50%">
-          <stop offset="0%" stopColor={ship.thruster} stopOpacity="0.9" />
-          <stop offset="100%" stopColor={ship.thruster} stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id={`fl${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={ship.thruster} />
-          <stop offset="55%" stopColor="#ff7700" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="transparent" />
-        </linearGradient>
-        <linearGradient id={`sf${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={ship.thruster} stopOpacity="0.7" />
-          <stop offset="100%" stopColor="transparent" />
-        </linearGradient>
-        <linearGradient id={`bd${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={ship.color} stopOpacity="0.95" />
-          <stop offset="40%" stopColor={ship.accent} stopOpacity="0.6" />
-          <stop offset="100%" stopColor={ship.color} stopOpacity="0.75" />
-        </linearGradient>
-        <linearGradient id={`wl${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={ship.color} stopOpacity="0.5" />
-          <stop offset="100%" stopColor={ship.color} />
-        </linearGradient>
-        <linearGradient id={`wr${uid}`} x1="1" y1="0" x2="0" y2="0">
-          <stop offset="0%" stopColor={ship.color} stopOpacity="0.5" />
-          <stop offset="100%" stopColor={ship.color} />
-        </linearGradient>
-        <radialGradient id={`cp${uid}`} cx="35%" cy="35%">
-          <stop offset="0%" stopColor="rgba(220,245,255,0.96)" />
-          <stop offset="50%" stopColor={ship.accent} stopOpacity="0.7" />
-          <stop offset="100%" stopColor="rgba(10,20,50,0.65)" />
-        </radialGradient>
-      </defs>
-    </svg>
-  );
-};
 
 // ─── Stat bar ─────────────────────────────────────────────────────────────────
 const StatBar = ({
@@ -481,6 +307,38 @@ export default function Hangar({
     const s = localStorage.getItem("ships");
     return s ? JSON.parse(s) : SHIPS;
   });
+  const UPGRADES: Upgrade[] = [
+    {
+      id: "speed",
+      name: "Engine Boost",
+      desc: "+5 Speed",
+      emoji: "⚡",
+      levels: [0, 250, 500, 1000, 2000],
+      cur: 0,
+      iconBg: "linear-gradient(135deg,#001A30,rgba(0,229,255,0.1))",
+      iconBorder: "rgba(0,229,255,0.35)",
+    },
+    {
+      id: "shield",
+      name: "Shield Matrix",
+      desc: "+5 Shield",
+      emoji: "🛡",
+      levels: [0, 250, 500, 1000, 2000],
+      cur: 0,
+      iconBg: "linear-gradient(135deg,#001A10,rgba(0,255,120,0.1))",
+      iconBorder: "rgba(0,255,120,0.35)",
+    },
+    {
+      id: "cargo",
+      name: "Cargo Hold",
+      desc: "+5 Cargo",
+      emoji: "📦",
+      levels: [0, 250, 500, 1000, 2000],
+      cur: 0,
+      iconBg: "linear-gradient(135deg,#1A1000,rgba(255,181,71,0.1))",
+      iconBorder: "rgba(255,181,71,0.35)",
+    },
+  ];
   const [upgrades, setUpgrades] = useState<Upgrade[]>(() => {
     const s = localStorage.getItem("upgrades");
     return s ? JSON.parse(s) : UPGRADES;
@@ -632,13 +490,13 @@ export default function Hangar({
       >
         <BracketFrame
           style={{
-            padding: "5px 12px 5px 8px",
-            background: "rgba(17,24,39,0.8)",
-            border: `1px solid ${COLOR.borderPanel}`,
+            padding: "14px 20px",
+            background: "rgba(17,24,39,0.35)",
+            border: `1px solid rgba(0,229,255,0.1)`,
             borderRadius: RADIUS.md,
           }}
         >
-          <CoinDisplay value={coins} size="sm" />
+          <ShipSVG shipId={selectedShip.id} />
         </BracketFrame>
 
         <div
@@ -796,7 +654,7 @@ export default function Hangar({
                 borderRadius: RADIUS.md,
               }}
             >
-              <ShipDisplay ship={selectedShip} size={100} />
+              <ShipSVG shipId={selectedShip.id} />{" "}
             </BracketFrame>
           </div>
 

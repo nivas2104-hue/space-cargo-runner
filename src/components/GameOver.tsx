@@ -15,8 +15,8 @@ interface GameOverProps {
   coins: number;
   cargo: number;
   onRetry: () => void;
+  onHangar: () => void;
 }
-
 // ─── Wrecked Ship — angular, matches design system aesthetic ──────────────────
 // ─── Wrecked Ship ─────────────────────────────────────────────────────────────
 const WreckedShip = () => (
@@ -419,6 +419,7 @@ export default function GameOver({
   coins,
   cargo,
   onRetry,
+  onHangar,
 }: GameOverProps) {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
@@ -626,7 +627,10 @@ export default function GameOver({
         >
           ▶ &nbsp;PLAY AGAIN
         </PrimaryButton>
-        <SecondaryButton style={{ padding: "13px 0", flex: 1, fontSize: 12 }}>
+        <SecondaryButton
+          onClick={onHangar}
+          style={{ padding: "13px 0", flex: 1, fontSize: 12 }}
+        >
           ⬡ &nbsp;HANGAR
         </SecondaryButton>
       </div>

@@ -26,7 +26,9 @@ export default function App() {
   );
   const [xp, setXp] = useState(0);
   const tgUser = getTelegramUser();
-
+  const [selectedShip, setSelectedShip] = useState(
+    localStorage.getItem("selectedShip") || "VIPER_MK1",
+  );
   const [username] = useState(() => {
     if (tgUser?.username) {
       localStorage.setItem("username", tgUser.username);
@@ -80,7 +82,10 @@ export default function App() {
       <Hangar
         coins={totalCoins}
         onBack={() => setScreen("menu")}
-        onShipSelect={() => {}}
+        onShipSelect={(ship) => {
+          setSelectedShip(ship);
+          localStorage.setItem("selectedShip", ship);
+        }}
       />
     );
   }
@@ -98,6 +103,7 @@ export default function App() {
   if (screen === "gameplay") {
     return (
       <GameplayScreen
+        selectedShip={selectedShip}
         initialLives={3}
         initialCoins={0}
         initialFuel={100}
@@ -152,10 +158,11 @@ export default function App() {
           })
             .then((r) => r.json())
             .then((data) => {
+              console.log("SCORE RESPONSE", data);
               console.log("Leaderboard Updated", data);
 
               if (data.xpEarned) {
-                alert(`+${data.xpEarned} XP Earned`);
+                setXp((prev) => prev + data.xpEarned);
               }
 
               setScreen("gameover");
@@ -176,6 +183,7 @@ export default function App() {
         coins={finalCoins}
         cargo={finalCargo}
         onRetry={() => setScreen("gameplay")}
+        onHangar={() => setScreen("hangar")}
       />
     );
   }
