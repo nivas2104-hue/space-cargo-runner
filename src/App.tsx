@@ -13,10 +13,18 @@ export default function App() {
   }, []);
   const [screen, setScreen] = useState<Screen>("menu");
   useEffect(() => {
+    console.log("WINDOW TELEGRAM:", (window as any).Telegram);
+
+    console.log("WINDOW TELEGRAM WEBAPP:", (window as any).Telegram?.WebApp);
+
     const tgUser = getTelegramUser();
 
     console.log("TELEGRAM USER:", tgUser);
-    if (!tgUser) return;
+
+    if (!tgUser) {
+      console.log("NO TELEGRAM USER FOUND");
+      return;
+    }
 
     fetch("https://space-cargo-runner.onrender.com/user", {
       method: "POST",
