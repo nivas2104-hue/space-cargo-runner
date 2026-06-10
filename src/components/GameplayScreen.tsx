@@ -282,7 +282,6 @@ export default function GameplayScreen({
 
   // ── Game handlers (all logic unchanged) ──────────────────────────────────
   const triggerGameOver = () => {
-    console.log("GAME OVER TRIGGERED");
     localStorage.setItem(
       "runStats",
       JSON.stringify({
@@ -321,15 +320,16 @@ export default function GameplayScreen({
     shipX: number,
     objX: number,
     objY: number,
-    thresholdX = 7,
-    thresholdY = 6,
+    width = 8,
+    height = 4,
   ) => {
-    const SHIP_Y = 70;
+    const noseHit =
+      Math.abs(shipX - objX) <= width && Math.abs(70 - objY) <= height;
 
-    return (
-      Math.abs(shipX - objX) <= thresholdX &&
-      Math.abs(SHIP_Y - objY) <= thresholdY
-    );
+    const wingHit =
+      Math.abs(shipX - objX) <= width + 2 && Math.abs(76 - objY) <= height - 1;
+
+    return noseHit || wingHit;
   };
 
   const addScorePopup = (x: number, y: number, val: string) => {
@@ -402,7 +402,6 @@ export default function GameplayScreen({
     }
     if (t - lastSpawnFuel.current > 10000) {
       lastSpawnFuel.current = t;
-      console.log("FUEL SPAWNED");
       setFuelCans((prev) => [...prev.slice(-3), spawnFuelCan(randRef.current)]);
     }
 

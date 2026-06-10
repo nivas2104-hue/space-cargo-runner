@@ -28,13 +28,39 @@ export default function Profile({
   useEffect(() => {
     injectGlobalStyles();
   }, []);
+  function calculateLevel(totalXP: number) {
+    let level = 1;
+    let xpNeeded = 200;
+    let remainingXP = totalXP;
 
-  const level = Math.floor(xp / 200) + 1;
-  const xpProgress = xp % 200;
-  const xpPct = (xpProgress / 200) * 100;
+    while (remainingXP >= xpNeeded) {
+      remainingXP -= xpNeeded;
+      level++;
+      xpNeeded += 300;
+    }
+
+    return {
+      level,
+      currentXP: remainingXP,
+      xpToNext: xpNeeded,
+    };
+  }
+
+  const player = calculateLevel(xp);
+
+  const level = player.level;
+  const xpProgress = player.currentXP;
+  const xpNeeded = player.xpToNext;
+
+  const xpPct = (xpProgress / xpNeeded) * 100;
+  const loginTypeRaw = localStorage.getItem("loginType");
+
   const loginType =
-    localStorage.getItem("loginType") === "telegram" ? "TELEGRAM" : "GUEST";
-
+    loginTypeRaw === "telegram"
+      ? "TELEGRAM"
+      : loginTypeRaw === "wallet"
+        ? "WALLET"
+        : "GUEST";
   const stats = [
     { label: "LEVEL", value: String(level), color: COLOR.cyan },
     {
@@ -158,7 +184,7 @@ export default function Profile({
                 color: COLOR.amber,
               }}
             >
-              {xpProgress} / 200
+              {xpProgress} / {xpNeeded}{" "}
             </span>
           </div>
           <div
@@ -272,7 +298,27 @@ export default function Profile({
         >
           <CoinDisplay value={totalCoins} size="lg" />
         </div>
+        <PrimaryButton
+          onClick={() => {
+            localStorage.clear();
 
+            const newName = prompt("Enter new username");
+
+            if (newName && newName.trim()) {
+              localStorage.setItem("username", newName.trim());
+              localStorage.setItem("loginType", "guest");
+            }
+
+            window.location.reload();
+          }}
+          style={{
+            width: "100%",
+            marginBottom: 10,
+            background: "#ff5757",
+          }}
+        >
+          SWITCH ACCOUNT
+        </PrimaryButton>
         <PrimaryButton
           onClick={onBack}
           style={{ width: "100%", padding: "13px 0", fontSize: 14 }}

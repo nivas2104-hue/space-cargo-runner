@@ -20,5 +20,3 @@ bot.onText(/\/start/, (msg) => {
     },
   });
 });
-
-console.log("Bot Running...");

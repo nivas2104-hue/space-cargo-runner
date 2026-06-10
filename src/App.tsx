@@ -6,6 +6,7 @@ import GameplayScreen from "./components/GameplayScreen";
 import Profile from "./components/Profile";
 import { getTelegramUser } from "./utils/telegram";
 import { injectGlobalStyles } from "./components/design-system";
+import { saveScoreOnChain } from "./blockchain/saveScoreOnChain";
 type Screen = "menu" | "hangar" | "gameplay" | "gameover" | "profile";
 export default function App() {
   useEffect(() => {
@@ -13,19 +14,17 @@ export default function App() {
   }, []);
   const [screen, setScreen] = useState<Screen>("menu");
   useEffect(() => {
-    console.log("WINDOW TELEGRAM:", (window as any).Telegram);
-
-    console.log("WINDOW TELEGRAM WEBAPP:", (window as any).Telegram?.WebApp);
-
     const tgUser = getTelegramUser();
 
-    console.log("TELEGRAM USER:", tgUser);
-
     if (!tgUser) {
-      console.log("NO TELEGRAM USER FOUND");
       return;
     }
+    localStorage.setItem("loginType", "telegram");
 
+    if (tgUser.username) {
+      localStorage.setItem("username", tgUser.username);
+    }
+    localStorage.setItem("loginType", "telegram");
     fetch("https://space-cargo-runner.onrender.com/user", {
       method: "POST",
       headers: {
@@ -63,8 +62,14 @@ export default function App() {
     let name = localStorage.getItem("username");
 
     if (!name) {
-      name = "Guest";
-      localStorage.setItem("username", name);
+      const enteredName =
+        prompt("Enter your username") ||
+        `Guest${Math.floor(Math.random() * 9999)}`;
+
+      name = enteredName;
+
+      localStorage.setItem("username", enteredName);
+      localStorage.setItem("loginType", "guest");
     }
 
     return name;
@@ -83,16 +88,21 @@ export default function App() {
     })
       .then((r) => r.json())
       .then((data) => {
-        console.log("User Saved", data);
-
         if (data.user) {
           setXp(data.user.xp || 0);
+
+          setTotalCoins(data.user.coins || 0);
+
+          setBestScore(data.user.best_score || 0);
+
+          localStorage.setItem("totalCoins", String(data.user.coins || 0));
+
+          localStorage.setItem("bestScore", String(data.user.best_score || 0));
         }
       })
       .catch(console.error);
   }, [username]);
-  console.log("TG USER", tgUser);
-  console.log("USERNAME STATE", username);
+
   if (screen === "menu") {
     return (
       <MainMenu
@@ -135,8 +145,6 @@ export default function App() {
         initialFuel={100}
         level={1}
         onGameOver={(score, coins, cargo) => {
-          console.log("GAME OVER VALUES", score, coins, cargo);
-
           setFinalScore(score);
           setFinalCoins(coins);
           setFinalCargo(cargo);
@@ -180,14 +188,21 @@ export default function App() {
             body: JSON.stringify({
               wallet: userId,
               score,
+              coins,
             }),
           })
             .then((r) => r.json())
             .then(async (data) => {
-              console.log("SCORE RESPONSE", data);
-
               if (data.xpEarned) {
                 setXp((prev) => prev + data.xpEarned);
+              }
+
+              if (localStorage.getItem("walletAddress")) {
+                try {
+                  const txHash = await saveScoreOnChain(score);
+
+                  localStorage.setItem("lastTxHash", txHash);
+                } catch (err) {}
               }
 
               await fetch("https://space-cargo-runner.onrender.com/session", {

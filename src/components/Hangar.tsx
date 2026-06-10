@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   COLOR,
   FONT,
   RADIUS,
-  BracketFrame,
   PrimaryButton,
   SecondaryButton,
-  CoinDisplay,
   injectGlobalStyles,
 } from "./design-system";
 import ShipSVG from "./ShipSVG";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface HangarProps {
   coins: number;
@@ -50,7 +49,7 @@ interface Powerup {
   iconBg: string;
 }
 
-// ─── Data (unchanged) ─────────────────────────────────────────────────────────
+// ─── Data (unchanged) ────────────────────────────────────────────────────────
 const SHIPS: Ship[] = [
   {
     id: "phantom",
@@ -72,7 +71,7 @@ const SHIPS: Ship[] = [
     spd: 70,
     shd: 60,
     cap: 65,
-    price: 800,
+    price: 3800,
     owned: false,
     color: "#201000",
     accent: "#FF8C00",
@@ -85,7 +84,7 @@ const SHIPS: Ship[] = [
     spd: 80,
     shd: 55,
     cap: 55,
-    price: 1200,
+    price: 7200,
     owned: false,
     color: "#001A10",
     accent: "#00FFAA",
@@ -98,7 +97,7 @@ const SHIPS: Ship[] = [
     spd: 88,
     shd: 75,
     cap: 80,
-    price: 2500,
+    price: 10500,
     owned: false,
     color: "#001808",
     accent: "#00FF78",
@@ -111,7 +110,7 @@ const SHIPS: Ship[] = [
     spd: 96,
     shd: 70,
     cap: 85,
-    price: 4000,
+    price: 16000,
     owned: false,
     color: "#180030",
     accent: "#CC64FF",
@@ -124,7 +123,7 @@ const SHIPS: Ship[] = [
     spd: 100,
     shd: 90,
     cap: 100,
-    price: 6500,
+    price: 25500,
     owned: false,
     color: "#220020",
     accent: "#FF44CC",
@@ -175,27 +174,43 @@ const POWERUPS: Powerup[] = [
   },
 ];
 
+// ─── Inject styles ────────────────────────────────────────────────────────────
+const injectHangarStyles = () => {
+  if (document.getElementById("hangar-styles")) return;
+  const el = document.createElement("style");
+  el.id = "hangar-styles";
+  el.textContent = `
+    @keyframes stageGlow   { 0%,100%{opacity:.5} 50%{opacity:1} }
+    @keyframes scanline    { 0%{transform:translateY(-100%)} 100%{transform:translateY(400%)} }
+    @keyframes shimmer     { 0%{left:-100%} 100%{left:160%} }
+    @keyframes cardPulse   { 0%,100%{box-shadow:0 0 0 0 transparent} 50%{box-shadow:0 0 12px 1px rgba(0,229,255,0.12)} }
+  `;
+  document.head.appendChild(el);
+};
+
 // ─── Stat bar ─────────────────────────────────────────────────────────────────
 const StatBar = ({
   label,
   value,
   color,
+  accent,
 }: {
   label: string;
   value: number;
   color: string;
+  accent: string;
 }) => (
   <div
-    style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}
+    style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}
   >
     <div
       style={{
         fontFamily: FONT.ui,
-        fontWeight: 600,
-        fontSize: 10,
-        letterSpacing: "0.15em",
-        color: COLOR.textMuted,
-        width: 52,
+        fontWeight: 700,
+        fontSize: 9,
+        letterSpacing: "0.18em",
+        color: "rgba(255,255,255,0.35)",
+        width: 48,
         textTransform: "uppercase" as const,
       }}
     >
@@ -204,30 +219,63 @@ const StatBar = ({
     <div
       style={{
         flex: 1,
-        height: 6,
-        background: "rgba(255,255,255,0.07)",
-        borderRadius: 2,
+        height: 5,
+        background: "rgba(255,255,255,0.06)",
+        borderRadius: 3,
         overflow: "hidden",
+        position: "relative",
       }}
     >
+      {/* track grid lines */}
+      {[25, 50, 75].map((p) => (
+        <div
+          key={p}
+          style={{
+            position: "absolute",
+            left: `${p}%`,
+            top: 0,
+            width: 1,
+            height: "100%",
+            background: "rgba(255,255,255,0.06)",
+          }}
+        />
+      ))}
       <div
         style={{
           width: `${value}%`,
           height: "100%",
-          background: color,
-          borderRadius: 2,
-          boxShadow: `0 0 6px ${color}88`,
-          transition: "width 0.4s ease",
+          background: `linear-gradient(90deg, ${color}88, ${color})`,
+          borderRadius: 3,
+          boxShadow: `0 0 8px ${color}66`,
+          transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+          position: "relative",
         }}
-      />
+      >
+        {/* leading edge glow dot */}
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 5,
+            height: 5,
+            borderRadius: "50%",
+            background: color,
+            boxShadow: `0 0 6px ${color}`,
+          }}
+        />
+      </div>
     </div>
     <div
       style={{
         fontFamily: FONT.mono,
         fontSize: 10,
-        color: COLOR.textSecondary,
-        minWidth: 24,
+        fontWeight: 700,
+        color: accent,
+        minWidth: 26,
         textAlign: "right" as const,
+        textShadow: `0 0 8px ${accent}66`,
       }}
     >
       {value}
@@ -243,18 +291,18 @@ const Toast = ({ message }: { message: string }) => (
       bottom: 80,
       left: "50%",
       transform: "translateX(-50%)",
-      background: "rgba(17,24,39,0.96)",
-      border: `1px solid ${COLOR.borderActive}`,
+      background: "rgba(5,12,28,0.96)",
+      border: `1px solid rgba(0,229,255,0.35)`,
       borderRadius: RADIUS.md,
       padding: "9px 22px",
       fontFamily: FONT.ui,
-      fontSize: 13,
+      fontSize: 12,
       fontWeight: 700,
-      letterSpacing: "0.08em",
+      letterSpacing: "0.1em",
       color: "#fff",
-      whiteSpace: "nowrap",
+      whiteSpace: "nowrap" as const,
       zIndex: 99,
-      boxShadow: `0 0 20px rgba(0,229,255,0.2)`,
+      boxShadow: "0 0 24px rgba(0,229,255,0.18), 0 8px 32px rgba(0,0,0,0.6)",
       animation: "slideIn 0.25s ease",
     }}
   >
@@ -262,41 +310,7 @@ const Toast = ({ message }: { message: string }) => (
   </div>
 );
 
-// ─── Upgrade / Powerup icon ───────────────────────────────────────────────────
-const CardIcon = ({
-  emoji,
-  bg,
-  border,
-  isText = false,
-}: {
-  emoji: string;
-  bg: string;
-  border: string;
-  isText?: boolean;
-}) => (
-  <div
-    style={{
-      width: 48,
-      height: 48,
-      borderRadius: RADIUS.md,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: isText ? 16 : 22,
-      fontFamily: isText ? FONT.heading : "inherit",
-      fontWeight: isText ? 700 : undefined,
-      color: isText ? COLOR.amber : "inherit",
-      background: bg,
-      border: `1px solid ${border}`,
-      marginBottom: 4,
-      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06)`,
-    }}
-  >
-    {emoji}
-  </div>
-);
-
-// ─── Main Component ────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function Hangar({
   coins: initialCoins,
   onBack,
@@ -307,6 +321,7 @@ export default function Hangar({
     const s = localStorage.getItem("ships");
     return s ? JSON.parse(s) : SHIPS;
   });
+
   const UPGRADES: Upgrade[] = [
     {
       id: "speed",
@@ -339,6 +354,7 @@ export default function Hangar({
       iconBorder: "rgba(255,181,71,0.35)",
     },
   ];
+
   const [upgrades, setUpgrades] = useState<Upgrade[]>(() => {
     const s = localStorage.getItem("upgrades");
     return s ? JSON.parse(s) : UPGRADES;
@@ -355,6 +371,7 @@ export default function Hangar({
 
   useEffect(() => {
     injectGlobalStyles();
+    injectHangarStyles();
   }, []);
   useEffect(() => {
     localStorage.setItem("ships", JSON.stringify(ships));
@@ -431,6 +448,7 @@ export default function Hangar({
 
   const selectedShip = ships[selectedIdx];
   const isActive = selectedIdx === activeIdx;
+  const acc = selectedShip.accent;
 
   return (
     <div
@@ -438,7 +456,7 @@ export default function Hangar({
         position: "relative",
         width: "100%",
         height: "100%",
-        background: `radial-gradient(ellipse at 50% 25%, #0D1830 0%, ${COLOR.bgDeep} 65%)`,
+        background: `radial-gradient(ellipse at 50% 20%, #0D1830 0%, ${COLOR.bgDeep} 70%)`,
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -453,7 +471,7 @@ export default function Hangar({
           overflow: "hidden",
         }}
       >
-        {Array.from({ length: 45 }, (_, i) => (
+        {Array.from({ length: 50 }, (_, i) => (
           <div
             key={i}
             style={{
@@ -469,12 +487,40 @@ export default function Hangar({
                   : i % 11 === 0
                     ? COLOR.cyan
                     : "#fff",
-              opacity: 0.1 + (i % 6) * 0.08,
+              opacity: 0.08 + (i % 6) * 0.07,
               animation: `twinkle ${2 + (i % 4)}s ease-in-out ${(i % 10) * 0.3}s infinite alternate`,
             }}
           />
         ))}
       </div>
+
+      {/* Nebula blobs */}
+      <div
+        style={{
+          position: "absolute",
+          width: 280,
+          height: 280,
+          top: -80,
+          left: -100,
+          borderRadius: "50%",
+          background: "rgba(0,80,160,0.07)",
+          filter: "blur(70px)",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          width: 200,
+          height: 200,
+          top: "40%",
+          right: -80,
+          borderRadius: "50%",
+          background: `${acc}09`,
+          filter: "blur(60px)",
+          pointerEvents: "none",
+        }}
+      />
 
       {/* ── TOP BAR ── */}
       <div
@@ -482,50 +528,91 @@ export default function Hangar({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "52px 18px 12px",
+          padding: "52px 18px 14px",
           position: "relative",
           zIndex: 10,
-          borderBottom: `1px solid ${COLOR.borderSubtle}`,
+          borderBottom: "1px solid rgba(0,229,255,0.08)",
         }}
       >
-        <BracketFrame
+        {/* Coin pill */}
+        <div
           style={{
-            padding: "14px 20px",
-            background: "rgba(17,24,39,0.35)",
-            border: `1px solid rgba(0,229,255,0.1)`,
-            borderRadius: RADIUS.md,
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            background: "rgba(5,12,28,0.8)",
+            border: "1px solid rgba(0,229,255,0.25)",
+            borderRadius: 999,
+            padding: "6px 14px 6px 8px",
+            boxShadow: "0 0 14px rgba(0,229,255,0.1)",
           }}
         >
-          <ShipSVG shipId={selectedShip.id} />
-        </BracketFrame>
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle at 35% 30%, #FFE57A, #FF9500)",
+              border: "1.5px solid #FFD84D",
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              fontFamily: FONT.mono,
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#fff",
+            }}
+          >
+            {coins.toLocaleString()}
+          </span>
+        </div>
 
+        {/* Title */}
         <div
           style={{
             fontFamily: FONT.heading,
-            fontWeight: 700,
-            fontSize: 16,
-            letterSpacing: "0.2em",
+            fontWeight: 900,
+            fontSize: 15,
+            letterSpacing: "0.28em",
             color: "#fff",
+            textShadow: "0 0 20px rgba(0,229,255,0.35)",
           }}
         >
           HANGAR
         </div>
 
-        <SecondaryButton
+        {/* Back button */}
+        <button
           onClick={onBack}
-          style={{ fontSize: 11, padding: "6px 14px" }}
+          style={{
+            fontFamily: FONT.ui,
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            color: "rgba(255,255,255,0.45)",
+            background: "rgba(17,24,39,0.5)",
+            border: "1px solid rgba(0,229,255,0.2)",
+            borderRadius: RADIUS.md,
+            padding: "7px 14px",
+            cursor: "pointer",
+            transition: "all 0.15s",
+          }}
         >
           ← BACK
-        </SecondaryButton>
+        </button>
       </div>
 
       {/* ── TABS ── */}
       <div
         style={{
           display: "flex",
-          borderBottom: `1px solid ${COLOR.borderSubtle}`,
           position: "relative",
           zIndex: 10,
+          background: "rgba(5,12,28,0.4)",
+          borderBottom: "1px solid rgba(0,229,255,0.08)",
         }}
       >
         {(["ships", "store"] as const).map((t) => (
@@ -534,14 +621,14 @@ export default function Hangar({
             onClick={() => setTab(t)}
             style={{
               flex: 1,
-              padding: "11px 0",
+              padding: "12px 0",
               fontFamily: FONT.heading,
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: 700,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: tab === t ? COLOR.cyan : COLOR.textMuted,
-              background: tab === t ? "rgba(0,229,255,0.04)" : "transparent",
+              letterSpacing: "0.18em",
+              textTransform: "uppercase" as const,
+              color: tab === t ? COLOR.cyan : "rgba(255,255,255,0.3)",
+              background: tab === t ? "rgba(0,229,255,0.05)" : "transparent",
               border: "none",
               borderBottom:
                 tab === t ? `2px solid ${COLOR.cyan}` : "2px solid transparent",
@@ -549,12 +636,12 @@ export default function Hangar({
               transition: "all 0.2s",
             }}
           >
-            {t === "ships" ? "◈ SHIPS" : "⬡ UPGRADES"}
+            {t === "ships" ? "◈  SHIPS" : "⬡  UPGRADES"}
           </button>
         ))}
       </div>
 
-      {/* ── SHIPS TAB ── */}
+      {/* ══════════════ SHIPS TAB ══════════════ */}
       {tab === "ships" && (
         <div
           style={{
@@ -564,98 +651,110 @@ export default function Hangar({
             flexDirection: "column",
           }}
         >
-          {/* Stage */}
+          {/* Ship stage */}
           <div
             style={{
-              height: 230,
+              height: 240,
               position: "relative",
-              background: `radial-gradient(ellipse at 50% 65%, ${selectedShip.accent}18, transparent 65%)`,
+              flexShrink: 0,
+              background: `radial-gradient(ellipse at 50% 70%, ${acc}14 0%, transparent 65%)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
             }}
           >
-            {/* Stage floor glow */}
+            {/* Scanning line effect */}
             <div
               style={{
                 position: "absolute",
-                bottom: 16,
+                inset: 0,
+                pointerEvents: "none",
+                background: `linear-gradient(180deg, transparent 0%, ${acc}06 50%, transparent 100%)`,
+                animation: "scanline 4s linear infinite",
+              }}
+            />
+
+            {/* Stage floor ellipse */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 14,
                 left: "50%",
                 transform: "translateX(-50%)",
-                width: 160,
-                height: 20,
-                background: `radial-gradient(ellipse, ${selectedShip.accent}44, transparent 70%)`,
+                width: 180,
+                height: 18,
+                background: `radial-gradient(ellipse, ${acc}40, transparent 70%)`,
                 filter: "blur(8px)",
                 animation: "stageGlow 2s ease-in-out infinite",
               }}
             />
 
-            {/* Nav left */}
-            <button
-              onClick={() => navigate(-1)}
-              style={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                width: 34,
-                height: 34,
-                borderRadius: RADIUS.md,
-                background: "rgba(17,24,39,0.8)",
-                border: `1px solid ${COLOR.borderPanel}`,
-                color: COLOR.cyan,
-                fontSize: 20,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                zIndex: 5,
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 0 rgba(0,0,0,0.4)",
-              }}
-            >
-              ‹
-            </button>
+            {/* Corner brackets — pure CSS, no BracketFrame component */}
+            {[
+              {
+                top: 10,
+                left: 10,
+                borderTop: `2px solid ${acc}60`,
+                borderLeft: `2px solid ${acc}60`,
+              },
+              {
+                top: 10,
+                right: 10,
+                borderTop: `2px solid ${acc}60`,
+                borderRight: `2px solid ${acc}60`,
+              },
+              {
+                bottom: 10,
+                left: 10,
+                borderBottom: `2px solid ${acc}60`,
+                borderLeft: `2px solid ${acc}60`,
+              },
+              {
+                bottom: 10,
+                right: 10,
+                borderBottom: `2px solid ${acc}60`,
+                borderRight: `2px solid ${acc}60`,
+              },
+            ].map((s, i) => (
+              <div
+                key={i}
+                style={{ position: "absolute", width: 20, height: 20, ...s }}
+              />
+            ))}
 
-            {/* Nav right */}
-            <button
-              onClick={() => navigate(1)}
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                width: 34,
-                height: 34,
-                borderRadius: RADIUS.md,
-                background: "rgba(17,24,39,0.8)",
-                border: `1px solid ${COLOR.borderPanel}`,
-                color: COLOR.cyan,
-                fontSize: 20,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                zIndex: 5,
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 0 rgba(0,0,0,0.4)",
-              }}
-            >
-              ›
-            </button>
+            {/* Nav buttons */}
+            {[-1, 1].map((dir) => (
+              <button
+                key={dir}
+                onClick={() => navigate(dir as 1 | -1)}
+                style={{
+                  position: "absolute",
+                  [dir === -1 ? "left" : "right"]: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 4,
+                  background: "rgba(5,12,28,0.85)",
+                  border: `1px solid rgba(0,229,255,0.2)`,
+                  color: COLOR.cyan,
+                  fontSize: 22,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  zIndex: 5,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                  transition: "border-color 0.15s, background 0.15s",
+                }}
+              >
+                {dir === -1 ? "‹" : "›"}
+              </button>
+            ))}
 
-            {/* Corner bracket stage frame */}
-            <BracketFrame
-              style={{
-                padding: "14px 20px",
-                background: "rgba(17,24,39,0.35)",
-                border: `1px solid rgba(0,229,255,0.1)`,
-                borderRadius: RADIUS.md,
-              }}
-            >
-              <ShipSVG shipId={selectedShip.id} />{" "}
-            </BracketFrame>
+            {/* Ship */}
+            <ShipSVG shipId={selectedShip.id} />
           </div>
 
           {/* Dot indicators */}
@@ -672,13 +771,12 @@ export default function Hangar({
                 key={i}
                 onClick={() => setSelectedIdx(i)}
                 style={{
-                  width: i === selectedIdx ? 18 : 6,
+                  width: i === selectedIdx ? 20 : 6,
                   height: 6,
                   borderRadius: i === selectedIdx ? 3 : "50%",
                   background:
-                    i === selectedIdx ? COLOR.cyan : "rgba(255,255,255,0.15)",
-                  boxShadow:
-                    i === selectedIdx ? `0 0 6px ${COLOR.cyan}` : "none",
+                    i === selectedIdx ? acc : "rgba(255,255,255,0.12)",
+                  boxShadow: i === selectedIdx ? `0 0 8px ${acc}` : "none",
                   cursor: "pointer",
                   transition: "all 0.25s ease",
                 }}
@@ -686,79 +784,117 @@ export default function Hangar({
             ))}
           </div>
 
-          {/* Ship info */}
-          <div style={{ padding: "10px 22px 0" }}>
-            {/* Name + stars */}
-            <div style={{ textAlign: "center", marginBottom: 10 }}>
+          {/* Ship info panel */}
+          <div
+            style={{
+              margin: "10px 16px 0",
+              background: "rgba(5,12,28,0.7)",
+              border: `1px solid ${acc}22`,
+              borderRadius: RADIUS.md,
+              padding: "14px 16px 12px",
+              backdropFilter: "blur(12px)",
+              boxShadow: `0 0 20px ${acc}0A, inset 0 1px 0 rgba(255,255,255,0.04)`,
+            }}
+          >
+            {/* Name row */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontFamily: FONT.heading,
+                    fontWeight: 900,
+                    fontSize: 18,
+                    letterSpacing: "0.12em",
+                    color: "#fff",
+                    textShadow: `0 0 16px ${acc}55`,
+                  }}
+                >
+                  {selectedShip.name}
+                </div>
+                {/* Stars */}
+                <div style={{ display: "flex", gap: 3, marginTop: 3 }}>
+                  {[1, 2, 3, 4].map((i) => (
+                    <span
+                      key={i}
+                      style={{
+                        fontSize: 11,
+                        color:
+                          i <= selectedShip.stars
+                            ? COLOR.amber
+                            : "rgba(255,255,255,0.1)",
+                        textShadow:
+                          i <= selectedShip.stars
+                            ? `0 0 6px ${COLOR.amber}`
+                            : "none",
+                      }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {/* Price / owned badge */}
               <div
                 style={{
-                  fontFamily: FONT.heading,
+                  fontFamily: FONT.mono,
                   fontWeight: 700,
-                  fontSize: 22,
-                  letterSpacing: "0.14em",
-                  color: "#fff",
-                  textShadow: `0 0 16px ${selectedShip.accent}66`,
-                  marginBottom: 4,
+                  fontSize: selectedShip.owned ? 10 : 13,
+                  color: selectedShip.owned ? COLOR.green : COLOR.amber,
+                  textShadow: selectedShip.owned
+                    ? `0 0 8px ${COLOR.green}`
+                    : `0 0 8px ${COLOR.amber}`,
+                  letterSpacing: "0.08em",
                 }}
               >
-                {selectedShip.name}
-              </div>
-              <div
-                style={{ display: "flex", justifyContent: "center", gap: 4 }}
-              >
-                {[1, 2, 3].map((i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontSize: 14,
-                      color:
-                        i <= selectedShip.stars
-                          ? COLOR.amber
-                          : "rgba(255,255,255,0.1)",
-                      textShadow:
-                        i <= selectedShip.stars
-                          ? `0 0 6px ${COLOR.amber}`
-                          : "none",
-                    }}
-                  >
-                    ★
-                  </span>
-                ))}
+                {selectedShip.owned
+                  ? "OWNED"
+                  : `⬡ ${selectedShip.price.toLocaleString()}`}
               </div>
             </div>
 
+            {/* Stat bars */}
             <StatBar
               label="SPEED"
               value={selectedShip.spd}
-              color={COLOR.cyanSoft}
+              color={COLOR.cyan}
+              accent={acc}
             />
             <StatBar
               label="SHIELD"
               value={selectedShip.shd}
               color={COLOR.green}
+              accent={acc}
             />
             <StatBar
               label="CARGO"
               value={selectedShip.cap}
               color={COLOR.amber}
+              accent={acc}
             />
           </div>
 
           {/* Action buttons */}
-          <div style={{ display: "flex", gap: 8, padding: "12px 18px 16px" }}>
+          <div style={{ display: "flex", gap: 8, padding: "10px 16px 16px" }}>
             {selectedShip.owned ? (
               <PrimaryButton
                 onClick={handleSelect}
                 amber={isActive}
-                style={{ flex: 1, padding: "13px 0", fontSize: 14 }}
+                style={{ flex: 1, padding: "13px 0", fontSize: 13 }}
               >
-                {isActive ? "✓ ACTIVE SHIP" : "✓ SELECT SHIP"}
+                {isActive ? "✓  ACTIVE SHIP" : "✓  SELECT SHIP"}
               </PrimaryButton>
             ) : (
               <>
                 <SecondaryButton
                   disabled
-                  style={{ flex: 0.6, padding: "13px 0", fontSize: 12 }}
+                  style={{ flex: 0.6, padding: "13px 0", fontSize: 11 }}
                 >
                   PREVIEW
                 </SecondaryButton>
@@ -769,8 +905,8 @@ export default function Hangar({
                   style={{ flex: 1, padding: "13px 0", fontSize: 13 }}
                 >
                   {coins >= selectedShip.price
-                    ? `⬡ ${selectedShip.price.toLocaleString()}`
-                    : `🔒 ${selectedShip.price.toLocaleString()}`}
+                    ? `⬡  ${selectedShip.price.toLocaleString()}`
+                    : `🔒  ${selectedShip.price.toLocaleString()}`}
                 </PrimaryButton>
               </>
             )}
@@ -778,24 +914,25 @@ export default function Hangar({
         </div>
       )}
 
-      {/* ── STORE TAB ── */}
+      {/* ══════════════ STORE TAB ══════════════ */}
       {tab === "store" && (
         <div
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: "16px 16px 32px",
+            padding: "16px 16px 40px",
             scrollbarWidth: "none",
           }}
         >
-          {/* Upgrades */}
-          <SectionHeader label="SHIP UPGRADES" />
+          {/* ── UPGRADES SECTION ── */}
+          <SectionHeader label="SHIP UPGRADES" icon="⚙" />
+
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 8,
-              marginBottom: 20,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              marginBottom: 24,
             }}
           >
             {upgrades.map((u) => {
@@ -803,124 +940,35 @@ export default function Hangar({
               const isMax = u.cur >= maxLv;
               const nextCost = isMax ? 0 : u.levels[u.cur + 1];
               return (
-                <UpgradeCard
+                <UpgradeRow
                   key={u.id}
                   onClick={() => handleUpgrade(u)}
                   isMax={isMax}
-                >
-                  <CardIcon
-                    emoji={u.emoji}
-                    bg={u.iconBg}
-                    border={u.iconBorder}
-                  />
-                  <div
-                    style={{
-                      fontFamily: FONT.ui,
-                      fontWeight: 700,
-                      fontSize: 13,
-                      color: "#fff",
-                      textAlign: "center",
-                    }}
-                  >
-                    {u.name}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: FONT.ui,
-                      fontSize: 10,
-                      color: COLOR.textMuted,
-                      textAlign: "center",
-                    }}
-                  >
-                    {u.desc}
-                  </div>
-                  {/* Level pips */}
-                  <div style={{ display: "flex", gap: 3, margin: "3px 0" }}>
-                    {Array.from({ length: maxLv }, (_, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          width: 9,
-                          height: 9,
-                          borderRadius: 2,
-                          background:
-                            i < u.cur ? COLOR.amber : "rgba(255,255,255,0.08)",
-                          boxShadow:
-                            i < u.cur ? `0 0 5px ${COLOR.amber}88` : "none",
-                        }}
-                      />
-                    ))}
-                  </div>
-                  {isMax ? (
-                    <div
-                      style={{
-                        fontFamily: FONT.mono,
-                        fontSize: 11,
-                        color: COLOR.green,
-                        letterSpacing: "0.1em",
-                      }}
-                    >
-                      MAX ✓
-                    </div>
-                  ) : (
-                    <CoinDisplay value={nextCost} size="sm" />
-                  )}
-                </UpgradeCard>
+                  iconBg={u.iconBg}
+                  iconBorder={u.iconBorder}
+                  emoji={u.emoji}
+                  name={u.name}
+                  desc={u.desc}
+                  cur={u.cur}
+                  maxLv={maxLv}
+                  nextCost={nextCost}
+                />
               );
             })}
           </div>
 
-          {/* Power-ups */}
-          <SectionHeader label="POWER-UPS" />
+          {/* ── POWER-UPS SECTION ── */}
+          <SectionHeader label="POWER-UPS" icon="✦" />
+
           <div
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
           >
             {powerups.map((p) => (
-              <UpgradeCard
+              <PowerupCard
                 key={p.id}
                 onClick={() => handleBuyPowerup(p)}
-                badge={p.isNew ? "NEW" : undefined}
-              >
-                <CardIcon
-                  emoji={p.emoji}
-                  bg={p.iconBg}
-                  border="rgba(0,229,255,0.2)"
-                  isText={p.emoji === "×2"}
-                />
-                <div
-                  style={{
-                    fontFamily: FONT.ui,
-                    fontWeight: 700,
-                    fontSize: 13,
-                    color: "#fff",
-                    textAlign: "center",
-                  }}
-                >
-                  {p.name}
-                </div>
-                <div
-                  style={{
-                    fontFamily: FONT.ui,
-                    fontSize: 10,
-                    color: COLOR.textMuted,
-                    textAlign: "center",
-                  }}
-                >
-                  {p.desc}
-                </div>
-                {p.qty > 0 && (
-                  <div
-                    style={{
-                      fontFamily: FONT.mono,
-                      fontSize: 10,
-                      color: COLOR.green,
-                    }}
-                  >
-                    OWNED: {p.qty}
-                  </div>
-                )}
-                <CoinDisplay value={p.price} size="sm" />
-              </UpgradeCard>
+                p={p}
+              />
             ))}
           </div>
         </div>
@@ -932,44 +980,66 @@ export default function Hangar({
 }
 
 // ─── Section header ───────────────────────────────────────────────────────────
-function SectionHeader({ label }: { label: string }) {
+function SectionHeader({ label, icon }: { label: string; icon: string }) {
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
         gap: 10,
-        marginBottom: 10,
+        marginBottom: 12,
       }}
     >
-      <div style={{ flex: 1, height: 1, background: "rgba(0,229,255,0.12)" }} />
+      <span
+        style={{
+          fontFamily: FONT.mono,
+          fontSize: 11,
+          color: COLOR.cyan,
+          opacity: 0.7,
+        }}
+      >
+        {icon}
+      </span>
+      <div style={{ flex: 1, height: 1, background: "rgba(0,229,255,0.1)" }} />
       <span
         style={{
           fontFamily: FONT.heading,
           fontSize: 9,
           fontWeight: 700,
-          letterSpacing: "0.2em",
-          color: COLOR.textMuted,
+          letterSpacing: "0.22em",
+          color: "rgba(0,229,255,0.5)",
         }}
       >
         {label}
       </span>
-      <div style={{ flex: 1, height: 1, background: "rgba(0,229,255,0.12)" }} />
+      <div style={{ flex: 1, height: 1, background: "rgba(0,229,255,0.1)" }} />
     </div>
   );
 }
 
-// ─── Upgrade/Powerup card ─────────────────────────────────────────────────────
-function UpgradeCard({
-  children,
+// ─── Upgrade row (horizontal, not card grid) ──────────────────────────────────
+function UpgradeRow({
   onClick,
   isMax,
-  badge,
+  iconBg,
+  iconBorder,
+  emoji,
+  name,
+  desc,
+  cur,
+  maxLv,
+  nextCost,
 }: {
-  children: React.ReactNode;
   onClick: () => void;
-  isMax?: boolean;
-  badge?: string;
+  isMax: boolean;
+  iconBg: string;
+  iconBorder: string;
+  emoji: string;
+  name: string;
+  desc: string;
+  cur: number;
+  maxLv: number;
+  nextCost: number;
 }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -978,40 +1048,292 @@ function UpgradeCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered ? "rgba(0,229,255,0.05)" : "rgba(255,255,255,0.02)",
-        border: `1px solid ${hovered ? COLOR.borderPanel : COLOR.borderSubtle}`,
-        borderRadius: RADIUS.md,
-        padding: "14px 10px",
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
-        gap: 4,
+        gap: 14,
+        background: hovered ? "rgba(0,229,255,0.05)" : "rgba(5,12,28,0.6)",
+        border: `1px solid ${isMax ? "rgba(0,255,120,0.25)" : hovered ? "rgba(0,229,255,0.3)" : "rgba(0,229,255,0.1)"}`,
+        borderRadius: RADIUS.md,
+        padding: "14px 16px",
         cursor: "pointer",
+        transition: "all 0.18s",
+        boxShadow: isMax ? "inset 0 0 16px rgba(0,255,120,0.06)" : "none",
         position: "relative",
-        transition: "border-color 0.2s, background 0.2s",
-        boxShadow: isMax ? `inset 0 0 12px ${COLOR.greenDim}` : "none",
+        overflow: "hidden",
       }}
     >
-      {badge && (
+      {/* shimmer on hover */}
+      {hovered && (
         <div
           style={{
             position: "absolute",
-            top: -6,
-            right: -6,
-            background: COLOR.red,
+            top: 0,
+            width: "40%",
+            height: "100%",
+            background:
+              "linear-gradient(90deg,transparent,rgba(0,229,255,0.04),transparent)",
+            animation: "shimmer 0.6s ease forwards",
+          }}
+        />
+      )}
+
+      {/* Icon */}
+      <div
+        style={{
+          width: 46,
+          height: 46,
+          flexShrink: 0,
+          borderRadius: 10,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 22,
+          background: iconBg,
+          border: `1px solid ${iconBorder}`,
+          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.07)`,
+        }}
+      >
+        {emoji}
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 4,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: FONT.ui,
+              fontWeight: 700,
+              fontSize: 13,
+              color: "#fff",
+              letterSpacing: "0.05em",
+            }}
+          >
+            {name}
+          </span>
+          {isMax ? (
+            <span
+              style={{
+                fontFamily: FONT.mono,
+                fontSize: 10,
+                fontWeight: 700,
+                color: COLOR.green,
+                letterSpacing: "0.1em",
+                textShadow: `0 0 8px ${COLOR.green}`,
+              }}
+            >
+              MAX ✓
+            </span>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle at 35% 30%, #FFE57A, #FF9500)",
+                  border: "1px solid #FFD84D",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: COLOR.amber,
+                  textShadow: `0 0 6px ${COLOR.amber}66`,
+                }}
+              >
+                {nextCost.toLocaleString()}
+              </span>
+            </div>
+          )}
+        </div>
+        <div
+          style={{
+            fontFamily: FONT.ui,
+            fontSize: 10,
+            color: "rgba(255,255,255,0.35)",
+            marginBottom: 7,
+            letterSpacing: "0.04em",
+          }}
+        >
+          {desc}
+        </div>
+
+        {/* Level pips bar */}
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {Array.from({ length: maxLv }, (_, i) => (
+            <div
+              key={i}
+              style={{
+                height: 4,
+                flex: 1,
+                borderRadius: 2,
+                background:
+                  i < cur
+                    ? `linear-gradient(90deg, ${COLOR.amber}88, ${COLOR.amber})`
+                    : "rgba(255,255,255,0.07)",
+                boxShadow: i < cur ? `0 0 6px ${COLOR.amber}66` : "none",
+                transition: "background 0.3s",
+              }}
+            />
+          ))}
+          <span
+            style={{
+              fontFamily: FONT.mono,
+              fontSize: 9,
+              color: "rgba(255,255,255,0.35)",
+              marginLeft: 4,
+              whiteSpace: "nowrap" as const,
+            }}
+          >
+            {cur}/{maxLv}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Powerup card ─────────────────────────────────────────────────────────────
+function PowerupCard({ onClick, p }: { onClick: () => void; p: Powerup }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: hovered ? "rgba(0,229,255,0.05)" : "rgba(5,12,28,0.6)",
+        border: `1px solid ${hovered ? "rgba(0,229,255,0.3)" : "rgba(0,229,255,0.1)"}`,
+        borderRadius: RADIUS.md,
+        padding: "14px 12px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 5,
+        cursor: "pointer",
+        position: "relative",
+        overflow: "hidden",
+        transition: "all 0.18s",
+      }}
+    >
+      {p.isNew && (
+        <div
+          style={{
+            position: "absolute",
+            top: -1,
+            right: -1,
+            background: "linear-gradient(135deg, #FF4477, #CC1144)",
             color: "#fff",
             fontFamily: FONT.ui,
             fontWeight: 700,
-            fontSize: 9,
+            fontSize: 8,
             letterSpacing: "0.1em",
-            borderRadius: RADIUS.sm,
-            padding: "2px 6px",
+            borderRadius: "0 6px 0 6px",
+            padding: "3px 8px",
           }}
         >
-          {badge}
+          NEW
         </div>
       )}
-      {children}
+
+      {/* Icon */}
+      <div
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: 12,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: p.emoji === "×2" ? 18 : 24,
+          fontFamily: p.emoji === "×2" ? FONT.heading : "inherit",
+          fontWeight: p.emoji === "×2" ? 900 : undefined,
+          color: p.emoji === "×2" ? COLOR.amber : "inherit",
+          background: p.iconBg,
+          border: "1px solid rgba(0,229,255,0.2)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
+        }}
+      >
+        {p.emoji}
+      </div>
+
+      <div
+        style={{
+          fontFamily: FONT.ui,
+          fontWeight: 700,
+          fontSize: 12,
+          color: "#fff",
+          textAlign: "center",
+          letterSpacing: "0.04em",
+        }}
+      >
+        {p.name}
+      </div>
+
+      <div
+        style={{
+          fontFamily: FONT.ui,
+          fontSize: 9,
+          color: "rgba(255,255,255,0.38)",
+          textAlign: "center",
+          letterSpacing: "0.04em",
+        }}
+      >
+        {p.desc}
+      </div>
+
+      {p.qty > 0 && (
+        <div
+          style={{
+            fontFamily: FONT.mono,
+            fontSize: 10,
+            fontWeight: 700,
+            color: COLOR.green,
+            textShadow: `0 0 8px ${COLOR.green}66`,
+            letterSpacing: "0.08em",
+          }}
+        >
+          OWNED: {p.qty}
+        </div>
+      )}
+
+      {/* Price */}
+      <div
+        style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}
+      >
+        <div
+          style={{
+            width: 13,
+            height: 13,
+            borderRadius: "50%",
+            background: "radial-gradient(circle at 35% 30%, #FFE57A, #FF9500)",
+            border: "1px solid #FFD84D",
+            flexShrink: 0,
+          }}
+        />
+        <span
+          style={{
+            fontFamily: FONT.mono,
+            fontSize: 12,
+            fontWeight: 700,
+            color: COLOR.amber,
+            textShadow: `0 0 6px ${COLOR.amber}66`,
+          }}
+        >
+          {p.price}
+        </span>
+      </div>
     </div>
   );
 }

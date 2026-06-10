@@ -422,7 +422,7 @@ export default function GameOver({
   onHangar,
 }: GameOverProps) {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
-
+  const [txHash] = useState(localStorage.getItem("lastTxHash") || "");
   useEffect(() => {
     injectGlobalStyles();
     fetch("https://space-cargo-runner.onrender.com/leaderboard")
@@ -625,16 +625,132 @@ export default function GameOver({
           pulse
           style={{ padding: "13px 0", flex: 2, fontSize: 14 }}
         >
-          ▶ &nbsp;PLAY AGAIN
+          ▶ PLAY AGAIN
         </PrimaryButton>
+
         <SecondaryButton
           onClick={onHangar}
           style={{ padding: "13px 0", flex: 1, fontSize: 12 }}
         >
-          ⬡ &nbsp;HANGAR
+          ⬡ HANGAR
         </SecondaryButton>
       </div>
 
+      {localStorage.getItem("walletAddress") && txHash && (
+        <a
+          href={`https://sepolia.etherscan.io/tx/${txHash}`}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            maxWidth: 380,
+            marginTop: 12,
+            padding: "10px 14px",
+            background: "rgba(0,229,255,0.06)",
+            border: "1px solid rgba(0,229,255,0.22)",
+            borderRadius: RADIUS.md,
+            textDecoration: "none",
+            cursor: "pointer",
+            transition: "background 0.2s, border-color 0.2s",
+            boxSizing: "border-box",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLAnchorElement).style.background =
+              "rgba(0,229,255,0.12)";
+            (e.currentTarget as HTMLAnchorElement).style.borderColor =
+              "rgba(0,229,255,0.45)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLAnchorElement).style.background =
+              "rgba(0,229,255,0.06)";
+            (e.currentTarget as HTMLAnchorElement).style.borderColor =
+              "rgba(0,229,255,0.22)";
+          }}
+        >
+          {/* Left: icon + label */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Chain link icon */}
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              style={{ flexShrink: 0 }}
+            >
+              <path
+                d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                stroke="#00E5FF"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                stroke="#00E5FF"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <div>
+              <div
+                style={{
+                  fontFamily: FONT.ui,
+                  fontWeight: 700,
+                  fontSize: 11,
+                  letterSpacing: "0.18em",
+                  color: "#00E5FF",
+                  textTransform: "uppercase",
+                }}
+              >
+                View On-Chain Tx
+              </div>
+              <div
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 9,
+                  color: "rgba(0,229,255,0.5)",
+                  letterSpacing: "0.05em",
+                  marginTop: 2,
+                }}
+              >
+                {txHash.slice(0, 10)}…{txHash.slice(-8)}
+              </div>
+            </div>
+          </div>
+          {/* Right: Sepolia badge + arrow */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span
+              style={{
+                fontFamily: FONT.mono,
+                fontSize: 9,
+                letterSpacing: "0.12em",
+                color: "rgba(0,229,255,0.45)",
+                background: "rgba(0,229,255,0.08)",
+                border: "1px solid rgba(0,229,255,0.15)",
+                borderRadius: 3,
+                padding: "2px 6px",
+                textTransform: "uppercase",
+              }}
+            >
+              Sepolia
+            </span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M7 17L17 7M17 7H7M17 7v10"
+                stroke="#00E5FF"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.7"
+              />
+            </svg>
+          </div>
+        </a>
+      )}
       {/* Tagline */}
       <div
         style={{

@@ -1,16 +1,20 @@
-import hre from "hardhat";
+import pkg from "hardhat";
+
+const { ethers } = pkg;
 
 async function main() {
-  const GameRewards = await hre.ethers.getContractFactory("GameRewards");
+  const GameRewards = await ethers.getContractFactory("GameRewards");
 
   const contract = await GameRewards.deploy();
 
-  await contract.waitForDeployment();
+  await contract.deployed();
 
-  console.log("Deployed:", await contract.getAddress());
+  console.log("Deployed:", contract.address);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

@@ -621,9 +621,32 @@ export default function MainMenu({
           <div style={{ flex: 1 }}>
             <GhostButton
               accent="wallet"
-              onClick={() => {
-                // trigger your wallet connect logic here
-                // e.g. openWalletModal()
+              onClick={async () => {
+                try {
+                  if (!(window as any).ethereum) {
+                    alert("Install MetaMask");
+                    return;
+                  }
+
+                  const accounts = await (window as any).ethereum.request({
+                    method: "eth_requestAccounts",
+                  });
+
+                  localStorage.setItem("walletAddress", accounts[0]);
+
+                  localStorage.setItem("loginType", "wallet");
+
+                  localStorage.setItem(
+                    "username",
+                    accounts[0].slice(0, 6) + "..." + accounts[0].slice(-4),
+                  );
+
+                  alert("Wallet Connected");
+
+                  window.location.reload();
+                } catch (err) {
+                  console.error(err);
+                }
               }}
             >
               ◎ &nbsp;CONNECT WALLET

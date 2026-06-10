@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { BrowserProvider } from "ethers";
-
+import { ethers } from "ethers";
 export default function WalletConnect() {
   const [address, setAddress] = useState("");
 
@@ -11,14 +10,16 @@ export default function WalletConnect() {
         return;
       }
 
-      const provider = new BrowserProvider((window as any).ethereum);
+      const provider = new ethers.providers.Web3Provider(
+        (window as any).ethereum,
+      );
 
       const accounts = await provider.send("eth_requestAccounts", []);
 
       setAddress(accounts[0]);
-
       localStorage.setItem("walletAddress", accounts[0]);
-
+      localStorage.setItem("loginType", "wallet");
+      localStorage.setItem("username", accounts[0]);
       await fetch("https://space-cargo-runner.onrender.com/user", {
         method: "POST",
         headers: {
