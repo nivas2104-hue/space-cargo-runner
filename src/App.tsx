@@ -54,9 +54,12 @@ export default function App() {
     localStorage.getItem("selectedShip") || "VIPER_MK1",
   );
   const [username] = useState(() => {
-    if (tgUser?.username) {
-      localStorage.setItem("username", tgUser.username);
-      return tgUser.username;
+    if (tgUser) {
+      localStorage.setItem("username", tgUser.username || tgUser.id.toString());
+
+      localStorage.setItem("loginType", "telegram");
+
+      return tgUser.username || tgUser.id.toString();
     }
 
     let name = localStorage.getItem("username");
@@ -145,6 +148,7 @@ export default function App() {
         initialFuel={100}
         level={1}
         onGameOver={(score, coins, cargo) => {
+          console.log("GAME OVER CALLBACK FIRED");
           setFinalScore(score);
           setFinalCoins(coins);
           setFinalCargo(cargo);
@@ -199,10 +203,14 @@ export default function App() {
 
               if (localStorage.getItem("walletAddress")) {
                 try {
+                  console.log("SAVING SCORE ON CHAIN...");
                   const txHash = await saveScoreOnChain(score);
 
                   localStorage.setItem("lastTxHash", txHash);
-                } catch (err) {}
+                  console.log("SCORE SAVED ON CHAIN");
+                } catch (err) {
+                  console.error("BLOCKCHAIN ERROR:", err);
+                }
               }
 
               await fetch("https://space-cargo-runner.onrender.com/session", {

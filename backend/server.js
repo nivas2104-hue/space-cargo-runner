@@ -67,14 +67,14 @@ app.post("/score", async (req, res) => {
     );
     await pool.query(
       `
-UPDATE users
-SET 
-xp = COALESCE(xp,0) + $1,
-coins = COALESCE(coins,0) + $2,
-best_score = GREATEST(COALESCE(best_score,0), $3)
-WHERE user_id = $4
+  UPDATE users
+  SET
+  xp = COALESCE(xp,0) + $1,
+  coins = COALESCE(coins,0) + $2,
+  best_score = GREATEST(COALESCE(best_score,0), $3)
+  WHERE user_id = $4
   `,
-      ,
+      [earnedXP, coins, score, wallet],
     );
     const leaderboard = await pool.query(`
       SELECT *

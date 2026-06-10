@@ -80,7 +80,9 @@ export default function Profile({
       isText: true,
     },
   ];
+  const isTelegram = !!(window as any).Telegram?.WebApp?.initDataUnsafe?.user;
 
+  const hasWallet = !!localStorage.getItem("walletAddress");
   return (
     <div
       style={{
@@ -300,14 +302,15 @@ export default function Profile({
         </div>
         <PrimaryButton
           onClick={() => {
-            localStorage.clear();
+            const isTelegram = (window as any).Telegram?.WebApp?.initDataUnsafe
+              ?.user;
 
-            const newName = prompt("Enter new username");
-
-            if (newName && newName.trim()) {
-              localStorage.setItem("username", newName.trim());
-              localStorage.setItem("loginType", "guest");
+            if (!isTelegram) {
+              localStorage.removeItem("username");
+              localStorage.removeItem("loginType");
             }
+
+            localStorage.removeItem("walletAddress");
 
             window.location.reload();
           }}
@@ -317,7 +320,11 @@ export default function Profile({
             background: "#ff5757",
           }}
         >
-          SWITCH ACCOUNT
+          {hasWallet
+            ? "DISCONNECT WALLET"
+            : isTelegram
+              ? "TELEGRAM ACCOUNT"
+              : "SWITCH ACCOUNT"}
         </PrimaryButton>
         <PrimaryButton
           onClick={onBack}
